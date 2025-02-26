@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Code Editor</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+  <!-- Diff library for computing differences -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/diff/5.0.0/diff.min.js"></script>
+  <style>
+    body { 
+      margin: 0; 
+      padding: 0; 
+      font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #1a1a1a; 
+      color: #f5f5f5;
+      overflow: hidden;
+    }
+    /* File input styling */
+    #fileContainer {
+      padding: 10px; 
+      background: #2a2a2a; 
+      border-bottom: 1px solid #333; 
+      text-align: center;
+    }
+    #fileContainer input { padding: 5px; font-size: 14px; }
+    .main-container {
+      display: flex; 
+      flex-direction: column;
+      height: calc(100vh - 50px); 
+      overflow: hidden; 
+      position: relative;
+    }
+    .header {
+      background: #2a2a2a; 
+      padding: 10px; 
+      border-bottom: 1px solid #333; 
+      color: #f5f5f5; 
+      z-index: 10;
+    }
+    .tab-bar {
+      display: flex; 
+      padding: 10px; 
+      gap: 10px; 
+      border-bottom: 1px solid #333; 
+      background: #2a2a2a; 
+      z-index: 10;
+    }
+    .tab-button {
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 8px;
+      padding: 8px 20px; 
+      border-radius: 20px; 
+      border: 1px solid #555;
+      background: #3a3a3a; 
+      color: #ccc; 
+      cursor: pointer; 
+      font-size: 16px; 
+      transition: all 0.2s ease; 
+      min-width: 100px;
+    }
+    .tab-button.active {
+      background: #0095ff; 
+      color: white; 
+      border-color: #0077cc;
+    }
+    .toolbar {
+      display: flex; 
+      padding: 10px; 
+      gap: 10px; 
+      background: #2a2a2a; 
+      border-bottom: 1px solid #333; 
+      overflow-x: auto; 
+      z-index: 10;
+    }
+    .tool-button {
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 5px;
+      padding: 8px 15px; 
+      border-radius: 15px; 
+      border: 1px solid #555;
+      background: #3a3a3a; 
+      color: #ccc; 
+      cursor: pointer; 
+      font-size: 14px;
+      white-space: nowrap; 
+      transition: all 0.2s ease; 
+      min-width: 80px;
+    }
+    .tool-button:hover, .tab-button:hover {
+      background: #4a4a4a; 
+      transform: translateY(-1px); 
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    .tool-button:active, .tab-button:active {
+      transform: translateY(1px); 
+      box-shadow: none;
+    }
+    .editor-container {
+      flex: 1; 
+      background: #1a1a1a; 
+      overflow: auto; 
+      position: relative;
+    }
+    .CodeMirror {
+      height: 100% !important; 
+      background: #1a1a1a !important;
+      font-size: 14px; 
+      line-height: 1.6; 
+      color: #abb2bf !important;
+    }
+    .CodeMirror-gutters {
+      background: #2a2a2a !important; 
+      border-right: 1px solid #333 !important; 
+      cursor: pointer;
+    }
+    .CodeMirror-linenumber {
+      color: #aaa !important; 
+      padding: 0 15px 0 5px !important; 
+      cursor: pointer; 
+      font-weight: bold !important;
+    }
+    .cm-highlighted-line {
+      background-color: rgba(100, 100, 100, 0.3);
+    }
+    /* Overlay for scrollable line */
+    #line-scroll-overlay {
+      position: absolute; 
+      left: 0; 
+      right: 0; 
+      display: none; 
+      background: #2d2d2d;
+      overflow-x: auto; 
+      white-space: nowrap; 
+      z-index: 5; 
+      cursor: ew-resize;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); 
+      border-top: 1px solid #444; 
+      border-bottom: 1px solid #444;
+    }
+    #line-scroll-content {
+      font-family: monospace; 
+      padding: 0 10px; 
+      display: inline-block;
+    }
+    /* Syntax highlighting */
+    .cm-keyword { color: #C678DD !important; }
+    .cm-def { color: #98C379 !important; }
+    .cm-variable { color: #61AFEF !important; }
+    .cm-string { color: #98C379 !important; }
+    .cm-comment { color: #5C6370 !important; }
+    .cm-number { color: #D19A66 !important; }
+    .cm-operator { color: #ABB2BF !important; }
+    .cm-property { color: #98C379 !important; }
+    .search-panel {
+      display: none; 
+      padding: 10px; 
+      background: #2a2a2a; 
+      border-bottom: 1px solid #333; 
+      z-index: 10;
+    }
+    .search-panel.show {
+      display: flex; 
+      gap: 10px;
+    }
+    .search-panel input {
+      padding: 8px 12px; 
+      border-radius: 15px; 
+      border: 1px solid #444;
+      background: #3a3a3a; 
+      color: #f5f5f5; 
+      flex: 1;
+    }
+    /* Container for Preview view */
+    #previewView {
+      display: none; 
+      height: 100%; 
+      background: #ffffff; /* white background for rendering */
+    }
+    /* Bottom toolbar */
+    .bottom-toolbar {
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+      padding: 10px 15px; 
+      background: #2a2a2a; 
+      border-top: 1px solid #333; 
+      z-index: 10;
+    }
+    .nav-buttons { display: flex; gap: 20px; }
+    .nav-button, .action-button {
+      background: transparent; 
+      border: none; 
+      color: #4a90e2; 
+      font-size: 24px; 
+      cursor: pointer; 
+      padding: 5px;
+    }
+    .action-button { color: #4a90e2; font-size: 20px; }
+    .done-button {
+      color: #4a90e2; 
+      font-size: 18px; 
+      font-weight: bold; 
+      background: transparent;
+      border: none; 
+      padding: 5px 10px; 
+      cursor: pointer;
+    }
+    /* Diff highlighting styles */
+    .diff-add { background-color: rgba(144,238,144, 0.3); }
+    .diff-remove { background-color: rgba(255,99,71, 0.3); }
+    /* Issues panel styles */
+    #issuesPanel {
+      padding: 10px; 
+      background: #2d2d2d; 
+      border-bottom: 1px solid #444;
+      max-height: 150px; 
+      overflow-y: auto; 
+      font-family: monospace;
+    }
+    #issuesPanel ul { list-style-type: none; padding: 0; margin: 0; }
+    #issuesPanel li { padding: 5px; border-bottom: 1px solid #444; cursor: pointer; }
+    #issuesPanel li:hover { background: #3a3a3d; }
+  </style>
+</head>
+<body>
+  <!-- File input to load the original script -->
+  <div id="fileContainer">
+    <label for="scriptFile">Load Original Script:</label>
+    <input type="file" id="scriptFile" accept=".js,.txt,.html">
+  </div>
+
+  <!-- Main editor container -->
+  <div class="main-container">
+    <div class="header">
+      <h2 style="margin: 0; font-size: 1.5em;">Mobile Code Editor</h2>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-button active" onclick="switchTab('editor')">📝 Code</button>
+      <button class="tab-button" onclick="switchTab('preview')">👁️ Preview</button>
+      <button class="tab-button" onclick="switchTab('console')">💻 Console</button>
+      <button class="tab-button" onclick="switchTab('diff')">📝 Diff</button>
+    </div>
+
+    <div class="toolbar">
+      <button class="tool-button" onclick="runCode()">▶️ Run</button>
+      <button class="tool-button" onclick="formatCode()">🔧 Format</button>
+      <button class="tool-button" onclick="toggleSearch()">🔍 Find</button>
+      <button class="tool-button" onclick="copyCode()">📋 Copy</button>
+      <button class="tool-button" onclick="preFixCode()">📝 Pre‑Fix</button>
+      <button class="tool-button" onclick="loadFixedCode()">🔄 Apply Fix</button>
+      <button class="tool-button" onclick="saveCode()">💾 Save</button>
+    </div>
+
+    <div class="search-panel">
+      <input type="text" id="findInput" placeholder="Find...">
+      <input type="text" id="replaceInput" placeholder="Replace with...">
+      <button class="tool-button" onclick="findAndReplace()">Replace All</button>
+    </div>
+
+    <!-- Editor container -->
+    <div id="editor" class="editor-container">
+      <textarea id="code"></textarea>
+      <div id="line-scroll-overlay"><div id="line-scroll-content"></div></div>
+    </div>
+    <!-- Preview container -->
+    <div id="previewView" class="editor-container">
+      <iframe id="previewFrame" style="width:100%; height:100%; border:0;"></iframe>
+    </div>
+    <!-- Diff view container -->
+    <div id="diffView" class="editor-container" style="display:none; padding:10px; overflow-y:auto; font-family:monospace;">
+      <div id="issuesPanel"></div>
+      <div id="diffContent"></div>
+    </div>
+    
+    <div class="bottom-toolbar">
+      <div class="nav-buttons">
+        <button class="nav-button">&#8592;</button>
+        <button class="nav-button">&#8594;</button>
+      </div>
+      <button class="action-button">&#9679;</button>
+      <button class="action-button">&#128172;</button>
+      <button class="done-button">Done</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+  <script>
+    // Initialize CodeMirror editor instance.
+    var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+      mode: "javascript",
+      lineNumbers: true,
+      lineWrapping: false,
+      indentUnit: 2,
+      tabSize: 2,
+      autofocus: true,
+      theme: "default",
+      styleActiveLine: true,
+      matchBrackets: true,
+      scrollbarStyle: "native"
+    });
+
+    // Optionally, set default content if no file is loaded.
+    // editor.setValue("/* Your default script content goes here */");
+
+    // Load file content when user selects a file.
+    document.getElementById('scriptFile').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          editor.setValue(e.target.result);
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    // Global variable to track highlighted line.
+    let currentHighlightedLine = null;
+    const lineScrollOverlay = document.getElementById('line-scroll-overlay');
+    const lineScrollContent = document.getElementById('line-scroll-content');
+
+    // Toggle search panel.
+    window.toggleSearch = function() { 
+      hideLineScrollOverlay();
+      const searchPanel = document.querySelector('.search-panel');
+      searchPanel.classList.toggle('show');
+      if (searchPanel.classList.contains('show')) { document.getElementById('findInput').focus(); }
+    };
+
+    // Save code to localStorage.
+    window.saveCode = function() { 
+      const code = editor.getValue();
+      localStorage.setItem('savedCode', code);
+      alert("Code saved successfully!");
+    };
+
+    // Copy code to clipboard.
+    window.copyCode = function() { 
+      const code = editor.getValue();
+      navigator.clipboard.writeText(code)
+        .then(() => alert("Code copied to clipboard!"))
+        .catch(err => alert("Failed to copy: " + err));
+    };
+
+    // Switch between views.
+    window.switchTab = function(tabName) { 
+      hideLineScrollOverlay();
+      document.querySelectorAll('.tab-button').forEach(function(button) {
+        button.classList.remove('active');
+      });
+      document.querySelector(`.tab-button[onclick="switchTab('${tabName}')"]`).classList.add('active');
+      
+      // Show/hide views.
+      document.getElementById('editor').style.display = (tabName === 'editor') ? 'block' : 'none';
+      document.getElementById('diffView').style.display = (tabName === 'diff') ? 'block' : 'none';
+      document.getElementById('previewView').style.display = (tabName === 'preview') ? 'block' : 'none';
+      
+      if (tabName === 'preview') { updatePreview(); }
+    };
+
+    // Update preview by setting the iframe srcdoc to the current code.
+    function updatePreview() {
+      const code = editor.getValue();
+      document.getElementById('previewFrame').srcdoc = code;
+    }
+
+    // Hide overlay.
+    function hideLineScrollOverlay() {
+      lineScrollOverlay.style.display = 'none';
+      if (currentHighlightedLine !== null) {
+        editor.removeLineClass(currentHighlightedLine, "background", "cm-highlighted-line");
+        currentHighlightedLine = null;
+      }
+    }
+
+    // Show overlay on a specific line.
+    function showLineScrollOverlay(lineNumber) {
+      const lineText = editor.getLine(lineNumber);
+      const highlightedText = applySyntaxHighlighting(lineText);
+      lineScrollContent.innerHTML = highlightedText;
+      const coords = editor.charCoords({line: lineNumber, ch: 0}, "local");
+      const lineHeight = editor.defaultTextHeight();
+      lineScrollOverlay.style.top = coords.top + 'px';
+      lineScrollOverlay.style.height = lineHeight + 'px';
+      lineScrollOverlay.style.lineHeight = lineHeight + 'px';
+      const gutterWidth = editor.getGutterElement().offsetWidth;
+      lineScrollContent.style.paddingLeft = gutterWidth + 'px';
+      lineScrollOverlay.style.display = 'block';
+      lineScrollContent.style.minWidth = '150%';
+      const lineContentWidth = lineScrollContent.scrollWidth;
+      if (lineContentWidth > lineScrollOverlay.clientWidth) {
+        lineScrollOverlay.style.cursor = 'ew-resize';
+        lineScrollOverlay.style.overflowX = 'auto';
+      } else {
+        lineScrollOverlay.style.cursor = 'default';
+        lineScrollOverlay.style.overflowX = 'hidden';
+      }
+      editor.getWrapperElement().addEventListener('click', function handleWrapperClick(e) {
+        if (!lineScrollOverlay.contains(e.target)) {
+          hideLineScrollOverlay();
+          editor.getWrapperElement().removeEventListener('click', handleWrapperClick);
+        }
+      });
+    }
+
+    // Basic syntax highlighting.
+    function applySyntaxHighlighting(text) {
+      text = text.replace(/\b(function|return|const|let|var|if|else|for|while|this|new|document|window)\b/g, '<span class="keyword">$1</span>');
+      text = text.replace(/\b(\d+)\b/g, '<span class="number">$1</span>');
+      text = text.replace(/(['"])(.*?)\1/g, '<span class="string">$1$2$1</span>');
+      text = text.replace(/(\/\/.*$)/gm, '<span class="comment">$1</span>');
+      text = text.replace(/\.([a-zA-Z_$][a-zA-Z0-9_$]*)/g, '.<span class="property">$1</span>');
+      return text;
+    }
+
+    // Make line numbers clickable.
+    editor.on("gutterClick", function(cm, line) {
+      if (currentHighlightedLine !== null) {
+        editor.removeLineClass(currentHighlightedLine, "background", "cm-highlighted-line");
+      }
+      editor.addLineClass(line, "background", "cm-highlighted-line");
+      currentHighlightedLine = line;
+      showLineScrollOverlay(line);
+    });
+
+    // Initialize clickable line numbers.
+    function initEditor() {
+      setTimeout(function() {
+        const lineNumbers = document.querySelectorAll('.CodeMirror-linenumber');
+        lineNumbers.forEach(function(num, index) {
+          num.style.cursor = 'pointer';
+          num.style.color = '#aaa !important';
+          num.style.fontWeight = 'bold !important';
+          num.onclick = function() {
+            editor.setCursor(index);
+            if (currentHighlightedLine !== null) {
+              editor.removeLineClass(currentHighlightedLine, "background", "cm-highlighted-line");
+            }
+            editor.addLineClass(index, "background", "cm-highlighted-line");
+            currentHighlightedLine = index;
+            showLineScrollOverlay(index);
+          };
+        });
+      }, 500);
+    }
+
+    // Execute code (simulation).
+    function runCode() {
+      hideLineScrollOverlay();
+      try {
+        const code = editor.getValue();
+        console.log("Running code:", code);
+        alert("Code executed successfully!");
+      } catch (error) {
+        alert("Error running code: " + error.message);
+      }
+    }
+
+    // Re-format code.
+    function formatCode() {
+      hideLineScrollOverlay();
+      try {
+        editor.setValue(editor.getValue());
+        console.log("Code formatted");
+      } catch (error) {
+        alert("Error formatting code: " + error.message);
+      }
+    }
+
+    // Find and replace.
+    function findAndReplace() {
+      hideLineScrollOverlay();
+      const findText = document.getElementById('findInput').value;
+      const replaceText = document.getElementById('replaceInput').value;
+      if (!findText) return;
+      let cursor = editor.getSearchCursor(findText);
+      let count = 0;
+      while (cursor.findNext()) {
+        cursor.replace(replaceText);
+        count++;
+      }
+      alert(`Replaced ${count} occurrences.`);
+    }
+
+    // Pre-Fix: Automatically append the fix snippet at the end of the current code.
+    function preFixCode() {
+      const fixSnippet = prompt("Paste your fix snippet:");
+      if (fixSnippet !== null) {
+        const currentCode = editor.getValue();
+        const newCode = currentCode + "\n" + fixSnippet;
+        editor.setValue(newCode);
+        alert("Pre-fix applied! Your fix snippet has been appended to the code. You may now click 'Apply Fix' to review changes.");
+      }
+    }
+
+    // Load fixed code and process it.
+    // If left blank, uses the current editor content (with pre-fix applied).
+    function loadFixedCode() {
+      const fixedCode = prompt("If needed, paste the complete updated script (or leave blank to use the current code):");
+      const finalCode = fixedCode === null || fixedCode.trim() === "" ? editor.getValue() : fixedCode;
+      applyFixes(finalCode);
+    }
+
+    // Compute diff, show issues report, and display diff view.
+    function applyFixes(fixedCode) {
+      const originalCode = editor.getValue();
+      const diff = Diff.diffLines(originalCode, fixedCode);
+      let diffHtml = '';
+      let issues = [];
+      let originalLine = 1;
+
+      diff.forEach(function(part) {
+        const lineCount = part.value.split('\n').length - 1;
+        let issueText = '';
+        if (part.removed) {
+          issueText = `Issue ${issues.length+1}: Removed ${lineCount} line(s) at line ${originalLine}.`;
+          issues.push({ text: issueText, line: originalLine });
+          diffHtml += '<span class="diff-remove">' + part.value.replace(/\n/g, '<br>') + '</span>';
+          originalLine += lineCount;
+        } else if (part.added) {
+          issueText = `Issue ${issues.length+1}: Added ${lineCount} line(s) near line ${originalLine}.`;
+          issues.push({ text: issueText, line: originalLine });
+          diffHtml += '<span class="diff-add">' + part.value.replace(/\n/g, '<br>') + '</span>';
+        } else {
+          diffHtml += part.value.replace(/\n/g, '<br>');
+          originalLine += lineCount;
+        }
+      });
+
+      const diffContent = document.getElementById('diffContent');
+      diffContent.innerHTML = diffHtml;
+
+      const issuesPanel = document.getElementById('issuesPanel');
+      issuesPanel.innerHTML = "<strong>Issues Report:</strong><ul>" + 
+        issues.map(issue => `<li onclick="highlightIssue(${issue.line})">${issue.text}</li>`).join('') +
+        "</ul>";
+
+      const autoNavigateBtn = document.createElement('button');
+      autoNavigateBtn.textContent = 'Auto-Navigate Issues';
+      autoNavigateBtn.className = 'tool-button';
+      autoNavigateBtn.style.marginRight = '10px';
+      autoNavigateBtn.onclick = function() { autoNavigateIssues(issues); };
+      diffContent.appendChild(autoNavigateBtn);
+
+      const confirmButton = document.createElement('button');
+      confirmButton.textContent = 'Apply Fixes';
+      confirmButton.className = 'tool-button';
+      confirmButton.onclick = function() {
+        editor.setValue(fixedCode);
+        alert('Fixes applied to the script!');
+        switchTab('editor');
+      };
+      diffContent.appendChild(confirmButton);
+
+      switchTab('diff');
+    }
+
+    // Highlight an issue in the editor.
+    function highlightIssue(lineNumber) {
+      editor.setCursor(lineNumber - 1);
+      editor.focus();
+      editor.addLineClass(lineNumber - 1, "background", "cm-highlighted-line");
+      setTimeout(() => {
+        editor.removeLineClass(lineNumber - 1, "background", "cm-highlighted-line");
+      }, 2000);
+    }
+
+    // Auto-navigate issues.
+    let currentIssueIndex = 0;
+    function autoNavigateIssues(issues) {
+      if (!issues.length) { alert("No issues to navigate!"); return; }
+      currentIssueIndex = 0;
+      goToIssue(issues, currentIssueIndex);
+    }
+    function goToIssue(issues, index) {
+      if (index >= issues.length) { alert("Finished reviewing all issues!"); return; }
+      const issue = issues[index];
+      highlightIssue(issue.line);
+      setTimeout(() => {
+        if (confirm(`Viewed: ${issue.text}\nClick OK for next, or Cancel to stop.`)) {
+          currentIssueIndex++;
+          goToIssue(issues, currentIssueIndex);
+        }
+      }, 1000);
+    }
+
+    document.addEventListener('DOMContentLoaded', initEditor);
+    if (document.readyState === 'complete') { initEditor(); }
+  </script>
+</body>
+</html>
