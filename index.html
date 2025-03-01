@@ -12,7 +12,7 @@
       margin: 0; 
       padding: 0; 
       font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background-color: #1a1a1a; 
+      background-color: #121212; 
       color: #f5f5f5;
       overflow: hidden;
     }
@@ -22,12 +22,29 @@
       background: #2a2a2a; 
       border-bottom: 1px solid #333; 
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    #fileContainer input { padding: 5px; font-size: 14px; }
+    #fileContainer label {
+      margin-bottom: 8px;
+      color: #f5f5f5;
+      font-size: 16px;
+    }
+    #fileContainer input { 
+      padding: 8px;
+      font-size: 14px;
+      width: 80%;
+      max-width: 300px;
+      border-radius: 20px;
+      border: 1px solid #555;
+      background: #3a3a3a;
+      color: #f5f5f5;
+    }
     .main-container {
       display: flex; 
       flex-direction: column;
-      height: calc(100vh - 50px); 
+      height: calc(100vh - 60px); 
       overflow: hidden; 
       position: relative;
     }
@@ -37,29 +54,38 @@
       border-bottom: 1px solid #333; 
       color: #f5f5f5; 
       z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     .tab-bar {
       display: flex; 
-      padding: 10px; 
-      gap: 10px; 
+      padding: 8px 5px; 
+      gap: 5px; 
       border-bottom: 1px solid #333; 
       background: #2a2a2a; 
       z-index: 10;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .tab-button {
       display: flex; 
       align-items: center; 
       justify-content: center; 
-      gap: 8px;
-      padding: 8px 20px; 
+      gap: 4px;
+      padding: 10px 15px; 
       border-radius: 20px; 
       border: 1px solid #555;
       background: #3a3a3a; 
-      color: #ccc; 
+      color: #f5f5f5; 
       cursor: pointer; 
-      font-size: 16px; 
+      font-size: 14px; 
       transition: all 0.2s ease; 
-      min-width: 100px;
+      flex: 1;
+      min-width: 80px;
+      width: 100px;
+      text-align: center;
+      white-space: nowrap;
     }
     .tab-button.active {
       background: #0095ff; 
@@ -68,28 +94,34 @@
     }
     .toolbar {
       display: flex; 
-      padding: 10px; 
-      gap: 10px; 
+      padding: 8px 5px; 
+      gap: 5px; 
       background: #2a2a2a; 
       border-bottom: 1px solid #333; 
       overflow-x: auto; 
       z-index: 10;
+      flex-wrap: wrap;
+      justify-content: center;
+      -webkit-overflow-scrolling: touch;
     }
     .tool-button {
       display: flex; 
       align-items: center; 
       justify-content: center; 
-      gap: 5px;
-      padding: 8px 15px; 
-      border-radius: 15px; 
+      gap: 3px;
+      padding: 10px 15px; 
+      border-radius: 20px; 
       border: 1px solid #555;
       background: #3a3a3a; 
-      color: #ccc; 
+      color: #f5f5f5; 
       cursor: pointer; 
       font-size: 14px;
       white-space: nowrap; 
-      transition: all 0.2s ease; 
+      transition: all 0.2s ease;
       min-width: 80px;
+      width: 100px;
+      text-align: center;
+      margin-bottom: 5px;
     }
     .tool-button:hover, .tab-button:hover {
       background: #4a4a4a; 
@@ -100,16 +132,27 @@
       transform: translateY(1px); 
       box-shadow: none;
     }
+    .tool-button.primary {
+      background: #0095ff;
+      color: white;
+      border-color: #0077cc;
+    }
+    .tool-button.warning {
+      background: #e74c3c;
+      color: white;
+      border-color: #c0392b;
+    }
     .editor-container {
       flex: 1; 
       background: #1a1a1a; 
       overflow: auto; 
       position: relative;
+      min-height: 250px;
     }
     .CodeMirror {
       height: 100% !important; 
       background: #1a1a1a !important;
-      font-size: 14px; 
+      font-size: 16px; /* Increased font size for mobile */
       line-height: 1.6; 
       color: #abb2bf !important;
     }
@@ -158,14 +201,14 @@
     .cm-property { color: #98C379 !important; }
     .search-panel {
       display: none; 
-      padding: 10px; 
+      padding: 8px; 
       background: #2a2a2a; 
       border-bottom: 1px solid #333; 
       z-index: 10;
     }
     .search-panel.show {
       display: flex; 
-      gap: 10px;
+      gap: 5px;
     }
     .search-panel input {
       padding: 8px 12px; 
@@ -225,6 +268,165 @@
     #issuesPanel ul { list-style-type: none; padding: 0; margin: 0; }
     #issuesPanel li { padding: 5px; border-bottom: 1px solid #444; cursor: pointer; }
     #issuesPanel li:hover { background: #3a3a3d; }
+		
+		/* Error Detector UI styles */
+    #error-detector-ui {
+      position: fixed;
+      bottom: 70px;
+      right: 10px;
+      width: 90%;
+      max-width: 350px;
+      background-color: #2d2d2d;
+      border: 1px solid #e74c3c;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      z-index: 10000;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      display: none;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    
+    #error-detector-header {
+      background-color: #e74c3c; 
+      color: white; 
+      padding: 10px; 
+      font-weight: bold; 
+      display: flex; 
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    #error-detector-content {
+      padding: 10px; 
+      max-height: 300px; 
+      overflow-y: auto;
+      color: #f5f5f5;
+    }
+    
+    .error-heading {
+      margin-bottom: 10px; 
+      font-weight: bold; 
+      color: #e74c3c;
+    }
+    
+    .issue-heading {
+      margin-bottom: 10px; 
+      font-weight: bold; 
+      color: #e67e22;
+    }
+    
+    .suggestion-heading {
+      margin-bottom: 10px; 
+      font-weight: bold; 
+      color: #2ecc71;
+    }
+    
+    .error-detector-message {
+      margin-bottom: 10px; 
+      color: #ccc; 
+      word-break: break-word;
+    }
+    
+    .error-close-btn {
+      cursor: pointer;
+      font-size: 16px;
+    }
+    
+    .fix-button {
+      background-color: #2ecc71;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    
+    .fix-button:hover {
+      background-color: #27ae60;
+    }
+    
+    #error-detector-console-output {
+      display: none;
+      padding: 10px;
+      background: #272822;
+      border-top: 1px solid #444;
+      font-family: monospace;
+      max-height: 200px;
+      overflow-y: auto;
+      color: #f8f8f2;
+    }
+    
+    /* Console tab styles */
+    #consoleView {
+      display: none;
+      height: 100%;
+      background-color: #1a1a1a;
+      overflow: auto;
+      padding: 10px;
+      font-family: monospace;
+      color: #f5f5f5;
+    }
+    
+    .console-log {
+      padding: 5px;
+      border-bottom: 1px solid #333;
+    }
+    
+    .console-error {
+      color: #e74c3c;
+      background-color: rgba(231, 76, 60, 0.1);
+      padding: 5px;
+      border-bottom: 1px solid #333;
+    }
+    
+    .console-warn {
+      color: #f39c12;
+      background-color: rgba(243, 156, 18, 0.1);
+      padding: 5px;
+      border-bottom: 1px solid #333;
+    }
+
+    /* Clear button specific styling */
+    .clear-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 15px;
+      border-radius: 20px;
+      border: 1px solid #c0392b;
+      background: #e74c3c;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      min-width: 80px;
+      width: 90%;
+      max-width: 300px;
+      text-align: center;
+      margin: 10px auto;
+    }
+
+    /* Media queries for better mobile responsiveness */
+    @media (max-width: 480px) {
+      .CodeMirror {
+        font-size: 14px;
+      }
+      
+      .tool-button, .tab-button {
+        min-width: 70px;
+        padding: 8px 12px;
+      }
+      
+      .editor-container {
+        min-height: 200px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -232,46 +434,51 @@
   <div id="fileContainer">
     <label for="scriptFile">Load Original Script:</label>
     <input type="file" id="scriptFile" accept=".js,.txt,.html">
+    <button class="clear-button" id="clearBtn">🧹 Clear Editor</button>
   </div>
 
   <!-- Main editor container -->
   <div class="main-container">
-    <div class="header">
-      <h2 style="margin: 0; font-size: 1.5em;">Mobile Code Editor</h2>
-    </div>
-
     <div class="tab-bar">
-      <button class="tab-button active" onclick="switchTab('editor')">📝 Code</button>
-      <button class="tab-button" onclick="switchTab('preview')">👁️ Preview</button>
-      <button class="tab-button" onclick="switchTab('console')">💻 Console</button>
-      <button class="tab-button" onclick="switchTab('diff')">📝 Diff</button>
+      <button class="tab-button active" id="codeTab">📝 Code</button>
+      <button class="tab-button" id="previewTab">👁️ Preview</button>
+      <button class="tab-button" id="consoleTab">💻 Console</button>
+      <button class="tab-button" id="diffTab">📊 Diff</button>
     </div>
 
     <div class="toolbar">
-      <button class="tool-button" onclick="runCode()">▶️ Run</button>
-      <button class="tool-button" onclick="formatCode()">🔧 Format</button>
-      <button class="tool-button" onclick="toggleSearch()">🔍 Find</button>
-      <button class="tool-button" onclick="copyCode()">📋 Copy</button>
-      <button class="tool-button" onclick="preFixCode()">📝 Pre‑Fix</button>
-      <button class="tool-button" onclick="loadFixedCode()">🔄 Apply Fix</button>
-      <button class="tool-button" onclick="saveCode()">💾 Save</button>
+      <button class="tool-button primary" id="runBtn">▶️ Run</button>
+      <button class="tool-button" id="analyzeBtn">🔍 Analyze</button>
+      <button class="tool-button" id="findBtn">🔍 Find</button>
+      <button class="tool-button" id="pasteBtn">📋 Paste</button>
+      <button class="tool-button" id="copyBtn">📋 Copy</button>
+      <button class="tool-button" id="formatBtn">🔧 Format</button>
+      <button class="tool-button" id="preFixBtn">🛠️ Fix</button>
+      <button class="tool-button" id="saveBtn">💾 Save</button>
     </div>
 
     <div class="search-panel">
       <input type="text" id="findInput" placeholder="Find...">
       <input type="text" id="replaceInput" placeholder="Replace with...">
-      <button class="tool-button" onclick="findAndReplace()">Replace All</button>
+      <button class="tool-button" id="replaceBtn">Replace All</button>
     </div>
-
-    <!-- Editor container -->
+		
+		<!-- Editor container -->
     <div id="editor" class="editor-container">
       <textarea id="code"></textarea>
       <div id="line-scroll-overlay"><div id="line-scroll-content"></div></div>
     </div>
+    
     <!-- Preview container -->
     <div id="previewView" class="editor-container">
       <iframe id="previewFrame" style="width:100%; height:100%; border:0;"></iframe>
     </div>
+    
+    <!-- Console view container -->
+    <div id="consoleView" class="editor-container">
+      <div id="consoleContent"></div>
+    </div>
+    
     <!-- Diff view container -->
     <div id="diffView" class="editor-container" style="display:none; padding:10px; overflow-y:auto; font-family:monospace;">
       <div id="issuesPanel"></div>
@@ -289,14 +496,28 @@
     </div>
   </div>
 
+  <!-- Error Detector UI -->
+  <div id="error-detector-ui">
+    <div id="error-detector-header">
+      <span>🐞 JavaScript Error Detector</span>
+      <span class="error-close-btn" id="errorCloseBtn">✖</span>
+    </div>
+    <div id="error-detector-content"></div>
+    <div id="error-detector-console-output"></div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
-  <script>
-    // Initialize CodeMirror editor instance.
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
+	
+	<script>
+    // Initialize CodeMirror editor instance
     var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
       mode: "javascript",
       lineNumbers: true,
-      lineWrapping: false,
+      lineWrapping: true, // Enable line wrapping by default for mobile
       indentUnit: 2,
       tabSize: 2,
       autofocus: true,
@@ -306,72 +527,205 @@
       scrollbarStyle: "native"
     });
 
-    // Optionally, set default content if no file is loaded.
-    // editor.setValue("/* Your default script content goes here */");
+    // Initialize virtual console
+    const virtualConsole = {
+      logs: [],
+      log: function(...args) {
+        this.logs.push({ type: 'log', content: args.join(' ') });
+        this.updateConsoleView();
+        return args[0]; // Return first argument for chaining
+      },
+      error: function(...args) {
+        this.logs.push({ type: 'error', content: args.join(' ') });
+        this.updateConsoleView();
+        return args[0];
+      },
+      warn: function(...args) {
+        this.logs.push({ type: 'warn', content: args.join(' ') });
+        this.updateConsoleView();
+        return args[0];
+      },
+      clear: function() {
+        this.logs = [];
+        this.updateConsoleView();
+      },
+      updateConsoleView: function() {
+        const consoleContent = document.getElementById('consoleContent');
+        consoleContent.innerHTML = '';
+        this.logs.forEach(log => {
+          const logElement = document.createElement('div');
+          logElement.className = `console-${log.type}`;
+          logElement.textContent = log.content;
+          consoleContent.appendChild(logElement);
+        });
+        // Auto-scroll to bottom
+        consoleContent.scrollTop = consoleContent.scrollHeight;
+      }
+    };
 
-    // Load file content when user selects a file.
+    // Global variable to track highlighted line
+    let currentHighlightedLine = null;
+    const lineScrollOverlay = document.getElementById('line-scroll-overlay');
+    const lineScrollContent = document.getElementById('line-scroll-content');
+
+    // Get DOM references to all buttons
+    const clearBtn = document.getElementById('clearBtn');
+    const runBtn = document.getElementById('runBtn');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const findBtn = document.getElementById('findBtn');
+    const pasteBtn = document.getElementById('pasteBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const formatBtn = document.getElementById('formatBtn');
+    const preFixBtn = document.getElementById('preFixBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const replaceBtn = document.getElementById('replaceBtn');
+    const errorCloseBtn = document.getElementById('errorCloseBtn');
+    
+    // Get DOM references to all tabs
+    const codeTab = document.getElementById('codeTab');
+    const previewTab = document.getElementById('previewTab');
+    const consoleTab = document.getElementById('consoleTab');
+    const diffTab = document.getElementById('diffTab');
+    
+    // Set up event listeners for file input
     document.getElementById('scriptFile').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
           editor.setValue(e.target.result);
+          
+          // Auto-detect file type and set mode
+          const filename = file.name.toLowerCase();
+          if (filename.endsWith('.html')) {
+            editor.setOption('mode', 'htmlmixed');
+          } else if (filename.endsWith('.css')) {
+            editor.setOption('mode', 'css');
+          } else {
+            editor.setOption('mode', 'javascript');
+          }
         };
         reader.readAsText(file);
       }
     });
-
-    // Global variable to track highlighted line.
-    let currentHighlightedLine = null;
-    const lineScrollOverlay = document.getElementById('line-scroll-overlay');
-    const lineScrollContent = document.getElementById('line-scroll-content');
-
-    // Toggle search panel.
-    window.toggleSearch = function() { 
+    
+    // Set up event handlers
+    
+    // Clear editor function
+    clearBtn.addEventListener('click', function() {
+      if (confirm("Are you sure you want to clear the editor? This action cannot be undone.")) {
+        editor.setValue("");
+        virtualConsole.clear();
+      }
+    });
+    
+    // Paste from clipboard function
+    pasteBtn.addEventListener('click', function() {
+      navigator.clipboard.readText()
+        .then(text => {
+          const currentCode = editor.getValue();
+          const cursorPos = editor.getCursor();
+          
+          if (currentCode.trim() === "" || confirm("Do you want to replace current content with clipboard?")) {
+            editor.setValue(text);
+          } else {
+            editor.replaceRange(text, cursorPos);
+          }
+          virtualConsole.log("Code pasted from clipboard");
+        })
+        .catch(err => {
+          virtualConsole.error("Failed to read clipboard: " + err);
+          alert("Could not access clipboard. Please check your browser permissions.");
+        });
+    });
+    
+    // Toggle search panel
+    findBtn.addEventListener('click', function() {
       hideLineScrollOverlay();
       const searchPanel = document.querySelector('.search-panel');
       searchPanel.classList.toggle('show');
       if (searchPanel.classList.contains('show')) { document.getElementById('findInput').focus(); }
-    };
-
-    // Save code to localStorage.
-    window.saveCode = function() { 
+    });
+    
+    // Save code to localStorage
+    saveBtn.addEventListener('click', function() { 
       const code = editor.getValue();
       localStorage.setItem('savedCode', code);
       alert("Code saved successfully!");
-    };
-
-    // Copy code to clipboard.
-    window.copyCode = function() { 
+    });
+    
+    // Copy code to clipboard
+    copyBtn.addEventListener('click', function() { 
       const code = editor.getValue();
       navigator.clipboard.writeText(code)
-        .then(() => alert("Code copied to clipboard!"))
-        .catch(err => alert("Failed to copy: " + err));
-    };
+        .then(() => {
+          virtualConsole.log("Code copied to clipboard");
+          alert("Code copied to clipboard!");
+        })
+        .catch(err => {
+          virtualConsole.error("Failed to copy: " + err);
+          alert("Failed to copy: " + err);
+        });
+    });
+    
+    // Find and replace
+    replaceBtn.addEventListener('click', function() {
+      hideLineScrollOverlay();
+      const findText = document.getElementById('findInput').value;
+      const replaceText = document.getElementById('replaceInput').value;
+      if (!findText) return;
+      let cursor = editor.getSearchCursor(findText);
+      let count = 0;
+      while (cursor.findNext()) {
+        cursor.replace(replaceText);
+        count++;
+      }
+      alert(`Replaced ${count} occurrences.`);
+    });
 
-    // Switch between views.
-    window.switchTab = function(tabName) { 
+    // Switch between views
+    function switchTab(tabName) { 
       hideLineScrollOverlay();
       document.querySelectorAll('.tab-button').forEach(function(button) {
         button.classList.remove('active');
       });
-      document.querySelector(`.tab-button[onclick="switchTab('${tabName}')"]`).classList.add('active');
       
-      // Show/hide views.
-      document.getElementById('editor').style.display = (tabName === 'editor') ? 'block' : 'none';
-      document.getElementById('diffView').style.display = (tabName === 'diff') ? 'block' : 'none';
-      document.getElementById('previewView').style.display = (tabName === 'preview') ? 'block' : 'none';
+      // Hide all views
+      document.getElementById('editor').style.display = 'none';
+      document.getElementById('diffView').style.display = 'none';
+      document.getElementById('previewView').style.display = 'none';
+      document.getElementById('consoleView').style.display = 'none';
       
-      if (tabName === 'preview') { updatePreview(); }
-    };
-
-    // Update preview by setting the iframe srcdoc to the current code.
+      // Show the selected view and highlight its tab
+      if (tabName === 'editor') {
+        document.getElementById('editor').style.display = 'block';
+        codeTab.classList.add('active');
+      } else if (tabName === 'diff') {
+        document.getElementById('diffView').style.display = 'block';
+        diffTab.classList.add('active');
+      } else if (tabName === 'preview') {
+        document.getElementById('previewView').style.display = 'block';
+        previewTab.classList.add('active');
+        updatePreview();
+      } else if (tabName === 'console') {
+        document.getElementById('consoleView').style.display = 'block';
+        consoleTab.classList.add('active');
+      }
+    }
+    
+    // Add event listeners to tabs
+    codeTab.addEventListener('click', function() { switchTab('editor'); });
+    previewTab.addEventListener('click', function() { switchTab('preview'); });
+    consoleTab.addEventListener('click', function() { switchTab('console'); });
+    diffTab.addEventListener('click', function() { switchTab('diff'); });
+    
+    // Update preview by setting the iframe srcdoc to the current code
     function updatePreview() {
       const code = editor.getValue();
       document.getElementById('previewFrame').srcdoc = code;
     }
 
-    // Hide overlay.
+    // Hide overlay
     function hideLineScrollOverlay() {
       lineScrollOverlay.style.display = 'none';
       if (currentHighlightedLine !== null) {
@@ -380,7 +734,7 @@
       }
     }
 
-    // Show overlay on a specific line.
+    // Show overlay on a specific line
     function showLineScrollOverlay(lineNumber) {
       const lineText = editor.getLine(lineNumber);
       const highlightedText = applySyntaxHighlighting(lineText);
@@ -410,7 +764,7 @@
       });
     }
 
-    // Basic syntax highlighting.
+    // Basic syntax highlighting
     function applySyntaxHighlighting(text) {
       text = text.replace(/\b(function|return|const|let|var|if|else|for|while|this|new|document|window)\b/g, '<span class="keyword">$1</span>');
       text = text.replace(/\b(\d+)\b/g, '<span class="number">$1</span>');
@@ -420,7 +774,7 @@
       return text;
     }
 
-    // Make line numbers clickable.
+    // Make line numbers clickable
     editor.on("gutterClick", function(cm, line) {
       if (currentHighlightedLine !== null) {
         editor.removeLineClass(currentHighlightedLine, "background", "cm-highlighted-line");
@@ -430,85 +784,118 @@
       showLineScrollOverlay(line);
     });
 
-    // Initialize clickable line numbers.
-    function initEditor() {
-      setTimeout(function() {
-        const lineNumbers = document.querySelectorAll('.CodeMirror-linenumber');
-        lineNumbers.forEach(function(num, index) {
-          num.style.cursor = 'pointer';
-          num.style.color = '#aaa !important';
-          num.style.fontWeight = 'bold !important';
-          num.onclick = function() {
-            editor.setCursor(index);
-            if (currentHighlightedLine !== null) {
-              editor.removeLineClass(currentHighlightedLine, "background", "cm-highlighted-line");
-            }
-            editor.addLineClass(index, "background", "cm-highlighted-line");
-            currentHighlightedLine = index;
-            showLineScrollOverlay(index);
-          };
-        });
-      }, 500);
-    }
-
-    // Execute code (simulation).
-    function runCode() {
+    // Execute code (in a sandbox with error catching)
+    runBtn.addEventListener('click', function() {
       hideLineScrollOverlay();
+      virtualConsole.clear();
+
       try {
         const code = editor.getValue();
-        console.log("Running code:", code);
-        alert("Code executed successfully!");
+        virtualConsole.log("Running code...");
+        
+        // Create a sandboxed environment for execution
+        const sandbox = {
+          console: virtualConsole,
+          // Provide any global objects you want to be available
+          setTimeout: window.setTimeout,
+          setInterval: window.setInterval,
+          clearTimeout: window.clearTimeout,
+          clearInterval: window.clearInterval,
+          alert: (msg) => virtualConsole.log(`[Alert]: ${msg}`),
+          localStorage: {
+            getItem: (key) => localStorage.getItem(key),
+            setItem: (key, value) => localStorage.setItem(key, value),
+            removeItem: (key) => localStorage.removeItem(key)
+          }
+        };
+        
+        // Wrap the code to catch syntax errors
+        const wrappedCode = `
+          try {
+            ${code}
+            console.log("Code executed successfully!");
+          } catch (error) {
+            console.error("Runtime error: " + error.message);
+            throw error; // re-throw for outer catch
+          }
+        `;
+        
+        try {
+          // Execute the code in the sandboxed environment
+          const executeCode = new Function(...Object.keys(sandbox), wrappedCode);
+          executeCode(...Object.values(sandbox));
+          
+          // Switch to console view to show output
+          switchTab('console');
+        } catch (error) {
+          virtualConsole.error(`Error: ${error.message}`);
+          // Analyze and show the error
+          errorDetector.analyzeAndShowError(error.message, error, editor.getValue());
+          switchTab('console');
+        }
       } catch (error) {
-        alert("Error running code: " + error.message);
+        virtualConsole.error(`Error preparing execution: ${error.message}`);
+        switchTab('console');
       }
-    }
+    });
 
-    // Re-format code.
-    function formatCode() {
+    // Format code
+    formatBtn.addEventListener('click', function() {
       hideLineScrollOverlay();
       try {
-        editor.setValue(editor.getValue());
-        console.log("Code formatted");
+        // Simple formatting - just re-indent all lines
+        const totalLines = editor.lineCount();
+        for (let i = 0; i < totalLines; i++) {
+          editor.indentLine(i);
+        }
+        virtualConsole.log("Code formatted");
       } catch (error) {
-        alert("Error formatting code: " + error.message);
+        virtualConsole.error("Error formatting code: " + error.message);
       }
-    }
+    });
 
-    // Find and replace.
-    function findAndReplace() {
-      hideLineScrollOverlay();
-      const findText = document.getElementById('findInput').value;
-      const replaceText = document.getElementById('replaceInput').value;
-      if (!findText) return;
-      let cursor = editor.getSearchCursor(findText);
-      let count = 0;
-      while (cursor.findNext()) {
-        cursor.replace(replaceText);
-        count++;
-      }
-      alert(`Replaced ${count} occurrences.`);
-    }
-
-    // Pre-Fix: Automatically append the fix snippet at the end of the current code.
-    function preFixCode() {
+    // Pre-Fix: Automatically append the fix snippet at the end of the current code
+    preFixBtn.addEventListener('click', function() {
       const fixSnippet = prompt("Paste your fix snippet:");
       if (fixSnippet !== null) {
         const currentCode = editor.getValue();
         const newCode = currentCode + "\n" + fixSnippet;
         editor.setValue(newCode);
-        alert("Pre-fix applied! Your fix snippet has been appended to the code. You may now click 'Apply Fix' to review changes.");
+        alert("Fix applied! Your fix snippet has been appended to the code.");
       }
-    }
+    });
 
-    // Load fixed code and process it.
-    // If left blank, uses the current editor content (with pre-fix applied).
-    function loadFixedCode() {
-      const fixedCode = prompt("If needed, paste the complete updated script (or leave blank to use the current code):");
-      const finalCode = fixedCode === null || fixedCode.trim() === "" ? editor.getValue() : fixedCode;
-      applyFixes(finalCode);
-    }
+    // Analyze code for errors
+    analyzeBtn.addEventListener('click', function() {
+      virtualConsole.clear();
+      virtualConsole.log("Analyzing code...");
+      
+      // Get the current code
+      const code = editor.getValue();
+      
+      // Check for common issues
+      const issues = errorDetector.detectCommonIssues(code);
+      
+      if (issues.length > 0) {
+        virtualConsole.warn(`Found ${issues.length} potential issues in your code:`);
+        issues.forEach((issue, i) => {
+          virtualConsole.warn(`Issue ${i+1}: ${issue.issue}`);
+          virtualConsole.log(`Suggestion: ${issue.suggestion}`);
+        });
+        
+        // Show the first issue in the error detector UI
+        if (issues.length > 0) {
+          errorDetector.showUI();
+          errorDetector.displayIssue(issues[0]);
+        }
+      } else {
+        virtualConsole.log("No issues detected in static analysis!");
+      }
+      
+      switchTab('console');
+    });
 
-    // Compute diff, show issues report, and display diff view.
+    // Compute diff, show issues report, and display diff view
     function applyFixes(fixedCode) {
       const originalCode = editor.getValue();
       const diff = Diff.diffLines(originalCode, fixedCode);
@@ -562,7 +949,7 @@
       switchTab('diff');
     }
 
-    // Highlight an issue in the editor.
+    // Highlight an issue in the editor
     function highlightIssue(lineNumber) {
       editor.setCursor(lineNumber - 1);
       editor.focus();
@@ -572,13 +959,14 @@
       }, 2000);
     }
 
-    // Auto-navigate issues.
+    // Auto-navigate issues
     let currentIssueIndex = 0;
     function autoNavigateIssues(issues) {
       if (!issues.length) { alert("No issues to navigate!"); return; }
       currentIssueIndex = 0;
       goToIssue(issues, currentIssueIndex);
     }
+    
     function goToIssue(issues, index) {
       if (index >= issues.length) { alert("Finished reviewing all issues!"); return; }
       const issue = issues[index];
@@ -590,9 +978,282 @@
         }
       }, 1000);
     }
+		// Error Detector Implementation
+    const errorDetector = {
+      errorPatterns: [
+        {
+          pattern: /ReferenceError: ([a-zA-Z_$][0-9a-zA-Z_$]*) is not defined/,
+          analyze: function(match, code) {
+            const varName = match[1];
+            // Check if it's a missing constant/variable declaration
+            if (code.includes(varName) && !code.includes(`const ${varName}`) && !code.includes(`let ${varName}`) && !code.includes(`var ${varName}`)) {
+              return {
+                issue: `Missing declaration for variable/constant: ${varName}`,
+                suggestion: `Consider adding 'const ${varName} = ...' at the top of your script where other constants are defined.`,
+                fix: `const ${varName} = "";  // TODO: replace with appropriate value`
+              };
+            }
+            return {
+              issue: `Reference to undefined variable: ${varName}`,
+              suggestion: `Check for typos or make sure ${varName} is defined before it's used.`,
+              fix: `const ${varName} = "";  // TODO: replace with appropriate value`
+            };
+          }
+        },
+        {
+          pattern: /TypeError: Cannot read properties of (null|undefined) \(reading '([^']+)'\)/,
+          analyze: function(match, code) {
+            const nullOrUndefined = match[1];
+            const property = match[2];
+            return {
+              issue: `Attempting to access property '${property}' of ${nullOrUndefined} value`,
+              suggestion: `Add a null/undefined check before accessing '${property}'.`,
+              fix: `if (myObject && myObject.${property}) { 
+  // Your code here 
+}`
+            };
+          }
+        },
+        {
+          pattern: /SyntaxError: Unexpected token '([^']+)'/,
+          analyze: function(match, code) {
+            const token = match[1];
+            return {
+              issue: `Syntax error with unexpected token: ${token}`,
+              suggestion: `Check for missing brackets, parentheses, or quotes near this token.`,
+              fix: `// Look for unmatched brackets or quotes near "${token}"`
+            };
+          }
+        },
+        {
+          pattern: /SyntaxError: Unexpected identifier '([^']+)'/,
+          analyze: function(match, code) {
+            const identifier = match[1];
+            return {
+              issue: `Syntax error with unexpected identifier: ${identifier}`,
+              suggestion: `This might be due to a missing comma, semicolon, or operator. Check the code around this identifier.`,
+              fix: `// Check for missing punctuation around "${identifier}"`
+            };
+          }
+        },
+        {
+          pattern: /localStorage/,
+          analyze: function(match, code) {
+            // If localStorage is used but there's no STORAGE_KEY constant defined
+            if (code.includes('localStorage') && !code.includes('STORAGE_KEY') && !code.match(/const\s+STORAGE_KEY/)) {
+              return {
+                issue: "Using localStorage but no STORAGE_KEY constant is defined",
+                suggestion: "Define a STORAGE_KEY constant at the top of your script.",
+                fix: `const STORAGE_KEY = "yourAppName_data";
 
+// Use it with localStorage like this:
+// localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+// const data = JSON.parse(localStorage.getItem(STORAGE_KEY));`
+              };
+            }
+            return null;
+          }
+        }
+      ],
+      
+      // Detect common issues in the code without running it
+      detectCommonIssues: function(code) {
+        const issues = [];
+        
+        // Check for localStorage without STORAGE_KEY
+        if (code.includes('localStorage') && !code.includes('STORAGE_KEY') && !code.match(/const\s+STORAGE_KEY/)) {
+          issues.push({
+            issue: "Using localStorage without a STORAGE_KEY constant",
+            suggestion: "Define a STORAGE_KEY constant at the top of your script for consistent localStorage access",
+            fix: `const STORAGE_KEY = "yourAppName_data";`
+          });
+        }
+        
+        // Check for console.log in production code
+        const consoleLogCount = (code.match(/console\.log/g) || []).length;
+        if (consoleLogCount > 3) {
+          issues.push({
+            issue: `Found ${consoleLogCount} console.log statements`,
+            suggestion: "Consider removing console.log statements from production code",
+            fix: "// Use a search and replace to remove or comment out console.log statements"
+          });
+        }
+        
+        // Check for potential memory leaks in event listeners
+        if (code.includes('addEventListener') && !code.includes('removeEventListener')) {
+          issues.push({
+            issue: "Adding event listeners without removing them",
+            suggestion: "Make sure to remove event listeners when they're no longer needed to prevent memory leaks",
+            fix: `// Example:
+element.addEventListener('click', handleClick);
+// Later when done:
+element.removeEventListener('click', handleClick);`
+          });
+        }
+
+        // Check for duplicate sandbox declaration
+        const sandboxRegex = /const\s+sandbox\s*=\s*{/g;
+        const sandboxMatches = code.match(sandboxRegex);
+        if (sandboxMatches && sandboxMatches.length > 1) {
+          issues.push({
+            issue: "Multiple sandbox object declarations found",
+            suggestion: "Remove duplicate sandbox declarations to avoid errors",
+            fix: "// Remove duplicate 'const sandbox = {' declaration"
+          });
+        }
+        
+        return issues;
+      },
+      
+      // Analyze an error message and the code to provide suggestions
+      analyzeError: function(errorMessage, error, code) {
+        for (const pattern of this.errorPatterns) {
+          const match = errorMessage.match(pattern.pattern);
+          if (match) {
+            return pattern.analyze(match, code);
+          }
+        }
+        
+        // Default analysis if no pattern matches
+        return {
+          issue: "Unknown error",
+          suggestion: "Review the error message and inspect your code around the mentioned line",
+          fix: "// Unable to generate specific fix for this error"
+        };
+      },
+      
+      // Show the error UI with analysis
+      analyzeAndShowError: function(errorMessage, error, code) {
+        const analysis = this.analyzeError(errorMessage, error, code);
+        this.showUI();
+        this.displayError(errorMessage, analysis);
+      },
+      
+      // Show the error detector UI
+      showUI: function() {
+        document.getElementById('error-detector-ui').style.display = 'block';
+      },
+      
+      // Hide the error detector UI
+      hideUI: function() {
+        document.getElementById('error-detector-ui').style.display = 'none';
+      },
+      
+      // Display an error in the UI
+      displayError: function(errorMessage, analysis) {
+        const content = document.getElementById('error-detector-content');
+        content.innerHTML = `
+          <div class="error-heading">Error:</div>
+          <div class="error-detector-message">${errorMessage}</div>
+          <div class="issue-heading">Issue:</div>
+          <div class="error-detector-message">${analysis.issue}</div>
+          <div class="suggestion-heading">Suggestion:</div>
+          <div class="error-detector-message">${analysis.suggestion}</div>
+          <pre style="background:#333; padding:10px; border-radius:4px; overflow:auto;">${analysis.fix}</pre>
+          <button class="fix-button" id="applyFixBtn">Apply Fix</button>
+        `;
+        
+        // Add event listener to fix button
+        document.getElementById('applyFixBtn').addEventListener('click', function() {
+          applyErrorFix(analysis.fix);
+        });
+      },
+      
+      // Display an issue in the UI
+      displayIssue: function(issue) {
+        const content = document.getElementById('error-detector-content');
+        content.innerHTML = `
+          <div class="issue-heading">Issue:</div>
+          <div class="error-detector-message">${issue.issue}</div>
+          <div class="suggestion-heading">Suggestion:</div>
+          <div class="error-detector-message">${issue.suggestion}</div>
+          <pre style="background:#333; padding:10px; border-radius:4px; overflow:auto;">${issue.fix}</pre>
+          <button class="fix-button" id="applyFixBtn">Apply Fix</button>
+        `;
+        
+        // Add event listener to fix button
+        document.getElementById('applyFixBtn').addEventListener('click', function() {
+          applyErrorFix(issue.fix);
+        });
+      }
+    };
+    
+    // Apply a fix to the code
+    function applyErrorFix(fix) {
+      const currentCode = editor.getValue();
+      const position = editor.getCursor();
+      
+      // Insert the fix at the cursor position or at the top of the file
+      if (position.line === 0 && position.ch === 0) {
+        editor.setValue(fix + '\n\n' + currentCode);
+      } else {
+        editor.replaceRange('\n' + fix + '\n', position);
+      }
+      
+      errorDetector.hideUI();
+      virtualConsole.log("Fix applied to code!");
+    }
+    
+    // Error close button event listener
+    errorCloseBtn.addEventListener('click', function() {
+      errorDetector.hideUI();
+    });
+
+    // Initialize editor with clickable line numbers
+    function initEditor() {
+      setTimeout(function() {
+        const lineNumbers = document.querySelectorAll('.CodeMirror-linenumber');
+        lineNumbers.forEach(function(num, index) {
+          num.style.cursor = 'pointer';
+          num.style.color = '#aaa';
+          num.style.fontWeight = 'bold';
+          num.onclick = function() {
+            editor.setCursor(index);
+            if (currentHighlightedLine !== null) {
+              editor.removeLineClass(currentHighlightedLine, "background", "cm-highlighted-line");
+            }
+            editor.addLineClass(index, "background", "cm-highlighted-line");
+            currentHighlightedLine = index;
+            showLineScrollOverlay(index);
+          };
+        });
+      }, 500);
+    }
+
+    // Check for saved code in localStorage
+    window.addEventListener('load', function() {
+      const savedCode = localStorage.getItem('savedCode');
+      if (savedCode) {
+        if (confirm("Found saved code. Do you want to load it?")) {
+          editor.setValue(savedCode);
+        }
+      }
+      
+      // Set default view to editor tab
+      switchTab('editor');
+      
+      // Initialize editor
+      initEditor();
+    });
+
+    // Make sure editor is initialized when document is loaded
     document.addEventListener('DOMContentLoaded', initEditor);
     if (document.readyState === 'complete') { initEditor(); }
   </script>
 </body>
 </html>
+		
+		
+			
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
