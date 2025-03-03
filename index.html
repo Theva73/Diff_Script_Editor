@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -201,11 +201,11 @@
 
     <div class="bottom-toolbar">
       <div class="nav-buttons">
-        <button class="nav-button" id="navLeftBtn">&#8592;</button>
-        <button class="nav-button" id="navRightBtn">&#8594;</button>
+        <button class="nav-button" id="navLeftBtn">←</button>
+        <button class="nav-button" id="navRightBtn">→</button>
       </div>
       <button class="action-button" id="blockReplacerBtn">Block Replace</button>
-      <button class="action-button" id="chatBtn">&#128172;</button>
+      <button class="action-button" id="chatBtn">💬</button>
       <button class="done-button" id="doneBtn">Done</button>
     </div>
   </div>
@@ -227,12 +227,15 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/search/search.min.js"></script>
 
   <!-- ESLint for browser (for Lint & Auto Fix) -->
-  <script src="https://unpkg.com/eslint4b@8.31.0/dist/eslint4b.js"></script>
+  <script src="https://unpkg.com/eslint@8.31.0/dist/eslint.min.js"></script>
   <!-- Prettier for Format (and fallback auto-fix) -->
   <script src="https://unpkg.com/prettier@2.8.8/standalone.js"></script>
   <script src="https://unpkg.com/prettier@2.8.8/parser-babel.js"></script>
 
   <script>
+    // Define Prettier plugins
+    const prettierPlugins = [prettierPlugins.babel];
+
     window.onload = function() {
       // Initialize CodeMirror
       const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
@@ -307,7 +310,7 @@
           const code = editor.getValue();
           const formatted = prettier.format(code, {
             parser: "babel",
-            plugins: prettierPlugins, // from <script src="...parser-babel.js">
+            plugins: prettierPlugins,
             tabWidth: 2,
             singleQuote: false,
             semi: true
@@ -322,7 +325,7 @@
       // 6. Lint code with ESLint
       document.getElementById("lintBtn").addEventListener("click", () => {
         const code = editor.getValue();
-        const linter = new eslint4b.Linter();
+        const linter = new eslint.Linter();
         const config = {
           parserOptions: { ecmaVersion: 2021 },
           env: { browser: true },
@@ -346,7 +349,7 @@
       // 7. Auto Fix (ESLint or fallback to Prettier)
       document.getElementById("autoFixBtn").addEventListener("click", () => {
         const code = editor.getValue();
-        const linter = new eslint4b.Linter();
+        const linter = new eslint.Linter();
         const config = {
           parserOptions: { ecmaVersion: 2021 },
           env: { browser: true },
@@ -356,13 +359,12 @@
           },
           fix: true
         };
-        if (typeof linter.verifyAndFix === "function") {
+        try {
           const result = linter.verifyAndFix(code, config);
-          if (result && result.fixed) {
+          if (result.fixed) {
             editor.setValue(result.output);
-            alert("ESLint auto-fix applied!");
+            alert("ESLint auto-fix applied successfully!");
           } else {
-            // If nothing was fixed, fallback or let user know
             alert("No ESLint fixes available. Trying Prettier instead...");
             const formatted = prettier.format(code, {
               parser: "babel",
@@ -370,9 +372,9 @@
             });
             editor.setValue(formatted);
           }
-        } else {
-          // Fallback to Prettier
-          alert("ESLint auto-fix not available. Using Prettier...");
+        } catch (err) {
+          console.error("Auto-fix failed:", err);
+          alert("Auto-fix failed. Falling back to Prettier: " + err.message);
           const formatted = prettier.format(code, {
             parser: "babel",
             plugins: prettierPlugins
@@ -381,7 +383,35 @@
         }
       });
 
-      // 8. Run code in the preview iframe
+      // 8. Fix code with ESLint
+      document.getElementById("preFixBtn").addEventListener("click", () => {
+        alert("Fixing code...");
+        const code = editor.getValue();
+        const linter = new eslint.Linter();
+        const config = {
+          parserOptions: { ecmaVersion: 2021 },
+          env: { browser: true },
+          rules: {
+            semi: ["error", "always"],
+            "no-unused-vars": "warn"
+          },
+          fix: true
+        };
+        try {
+          const result = linter.verifyAndFix(code, config);
+          if (result.fixed) {
+            editor.setValue(result.output);
+            alert("Code fixed successfully with ESLint!");
+          } else {
+            alert("No fixes available. Code is already correct or requires manual adjustment.");
+          }
+        } catch (err) {
+          console.error("Fix failed:", err);
+          alert("Fix failed: " + err.message);
+        }
+      });
+
+      // 9. Run code in the preview iframe
       document.getElementById("runBtn").addEventListener("click", () => {
         const code = editor.getValue();
         const previewFrame = document.getElementById("previewFrame");
@@ -392,7 +422,7 @@
         alert("Code is running in the preview iframe below!");
       });
 
-      // 9. AI Assist
+      // 10. AI Assist
       const askAiBtn = document.getElementById("askAiBtn");
       const aiPanel = document.getElementById("aiPanel");
       const aiResponse = document.getElementById("aiResponse");
@@ -437,7 +467,7 @@
         aiPanel.style.display = "none";
       });
 
-      // 10. Placeholder or simple alerts for the other buttons
+      // 11. Placeholder or simple alerts for the other buttons
       document.getElementById("analyzeBtn").addEventListener("click", () => {
         alert("Analyze function not implemented yet.");
       });
