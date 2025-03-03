@@ -3,224 +3,86 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mobile Code Editor with Import & Paste</title>
+  <title>Mobile Code Editor with Import, Paste & AI</title>
   <!-- CodeMirror CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css" />
 
   <style>
-    /* Basic Reset and General Styles */
     body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background-color: #121212;
-      color: #f5f5f5;
+      background-color: #121212; color: #f5f5f5;
       overflow: hidden;
     }
-    /* File Input Container */
     #fileContainer {
-      padding: 5px;
-      background: #2a2a2a;
-      border-bottom: 1px solid #333;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      padding: 5px; background: #2a2a2a; border-bottom: 1px solid #333;
+      text-align: center; display: flex; flex-direction: column; align-items: center;
       z-index: 10;
     }
     #fileContainer label {
-      margin-bottom: 4px;
-      font-size: 14px;
+      margin-bottom: 4px; font-size: 14px;
     }
     #fileContainer input {
-      padding: 6px;
-      font-size: 12px;
-      width: 80%;
-      max-width: 300px;
-      border-radius: 16px;
-      border: 1px solid #555;
-      background: #3a3a3a;
-      color: #f5f5f5;
+      padding: 6px; font-size: 12px; width: 80%; max-width: 300px;
+      border-radius: 16px; border: 1px solid #555; background: #3a3a3a; color: #f5f5f5;
     }
     .clear-button {
-      margin-top: 6px;
-      padding: 8px 10px;
-      border-radius: 16px;
-      border: 1px solid #c0392b;
-      background: #e74c3c;
-      color: white;
-      cursor: pointer;
-      font-size: 12px;
-      white-space: nowrap;
-      transition: all 0.2s ease;
-      min-width: 60px;
-      width: 90%;
-      max-width: 300px;
+      margin-top: 6px; padding: 8px 10px; border-radius: 16px;
+      border: 1px solid #c0392b; background: #e74c3c; color: white;
+      cursor: pointer; font-size: 12px; white-space: nowrap;
+      transition: all 0.2s ease; min-width: 60px; width: 90%; max-width: 300px;
       text-align: center;
     }
-    /* Main Container */
     .main-container {
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      height: calc(100vh - 50px); /* Account for top file input */
-      overflow: hidden;
+      display: flex; flex-direction: column; position: relative;
+      height: calc(100vh - 50px); overflow: hidden;
     }
-    /* Tab Bar */
-    .tab-bar {
-      display: flex;
-      flex-wrap: nowrap;
-      white-space: nowrap;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      padding: 4px 5px;
-      gap: 4px;
-      background: #2a2a2a;
-      border-bottom: 1px solid #333;
-      font-size: 12px;
+    .tab-bar, .toolbar {
+      display: flex; flex-wrap: nowrap; white-space: nowrap; overflow-x: auto;
+      -webkit-overflow-scrolling: touch; padding: 4px 5px; gap: 4px;
+      background: #2a2a2a; border-bottom: 1px solid #333; font-size: 12px;
     }
-    .tab-button {
-      flex: 0 0 auto;
-      padding: 6px 10px;
-      min-width: 60px;
-      font-size: 12px;
-      border: 1px solid #555;
-      background: #3a3a3a;
-      color: #f5f5f5;
-      border-radius: 20px;
-      cursor: pointer;
-      text-align: center;
+    .tab-button, .tool-button {
+      flex: 0 0 auto; padding: 6px 10px; min-width: 60px; font-size: 12px;
+      border: 1px solid #555; background: #3a3a3a; color: #f5f5f5;
+      border-radius: 20px; cursor: pointer; text-align: center;
     }
-    .tab-button.active {
-      background: #0095ff;
-      color: #fff;
-      border-color: #0077cc;
-    }
-    /* Toolbar */
-    .toolbar {
-      display: flex;
-      flex-wrap: nowrap;
-      white-space: nowrap;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      padding: 4px 5px;
-      gap: 4px;
-      background: #2a2a2a;
-      border-bottom: 1px solid #333;
-      font-size: 12px;
-    }
-    .tool-button {
-      flex: 0 0 auto;
-      padding: 6px 10px;
-      min-width: 60px;
-      font-size: 12px;
-      border: 1px solid #555;
-      background: #3a3a3a;
-      color: #f5f5f5;
-      border-radius: 20px;
-      cursor: pointer;
-      text-align: center;
-    }
-    .tool-button.primary {
-      background: #0095ff;
-      color: #fff;
-      border-color: #0077cc;
-    }
-    /* Editor Container */
+    .tab-button.active { background: #0095ff; color: #fff; border-color: #0077cc; }
+    .tool-button.primary { background: #0095ff; color: #fff; border-color: #0077cc; }
     .editor-container {
-      flex: 1;
-      background: #1a1a1a;
-      overflow: auto;
-      position: relative;
-      min-height: 0;
+      flex: 1; background: #1a1a1a; overflow: auto; position: relative; min-height: 0;
     }
-    .cm-s-darkmode.CodeMirror {
-      background: #1a1a1a !important;
-      color: #f5f5f5 !important;
-    }
-    .cm-s-darkmode .CodeMirror-gutters {
-      background: #2a2a2a !important;
-      border-right: 1px solid #333 !important;
-    }
-    .cm-s-darkmode .CodeMirror-linenumber {
-      color: #aaa !important;
-      font-weight: bold;
-    }
-    .CodeMirror {
-      height: 100% !important;
-      font-size: 14px;
-      line-height: 1.6;
-    }
-    /* Bottom Toolbar */
+    .cm-s-darkmode.CodeMirror { background: #1a1a1a !important; color: #f5f5f5 !important; }
+    .cm-s-darkmode .CodeMirror-gutters { background: #2a2a2a !important; border-right: 1px solid #333 !important; }
+    .cm-s-darkmode .CodeMirror-linenumber { color: #aaa !important; font-weight: bold; }
+    .CodeMirror { height: 100% !important; font-size: 14px; line-height: 1.6; }
     .bottom-toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 6px 10px;
-      background: #2a2a2a;
-      border-top: 1px solid #333;
-      font-size: 12px;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      white-space: nowrap;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 10px; background: #2a2a2a; border-top: 1px solid #333;
+      font-size: 12px; flex-wrap: nowrap; overflow-x: auto; white-space: nowrap;
     }
-    .nav-buttons {
-      display: flex;
-      gap: 10px;
-      flex: 0 0 auto;
-    }
+    .nav-buttons { display: flex; gap: 10px; flex: 0 0 auto; }
     .nav-button, .action-button {
-      flex: 0 0 auto;
-      background: transparent;
-      border: none;
-      color: #4a90e2;
-      font-size: 20px;
-      cursor: pointer;
-      padding: 4px;
+      flex: 0 0 auto; background: transparent; border: none; color: #4a90e2;
+      font-size: 20px; cursor: pointer; padding: 4px;
     }
     .done-button {
-      flex: 0 0 auto;
-      color: #4a90e2;
-      font-size: 16px;
-      font-weight: bold;
-      background: transparent;
-      border: none;
-      padding: 4px 8px;
-      cursor: pointer;
+      flex: 0 0 auto; color: #4a90e2; font-size: 16px; font-weight: bold;
+      background: transparent; border: none; padding: 4px 8px; cursor: pointer;
     }
     /* AI Panel */
     #aiPanel {
-      display: none;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 100;
-      background: #2a2a2a;
-      padding: 10px;
-      border-top: 2px solid #444;
-      color: #fff;
+      display: none; position: fixed; bottom: 0; left: 0; right: 0;
+      z-index: 100; background: #2a2a2a; padding: 10px; border-top: 2px solid #444; color: #fff;
     }
-    #aiPanel h4 {
-      margin: 0 0 8px;
-    }
+    #aiPanel h4 { margin: 0 0 8px; }
     #aiResponse {
-      max-height: 200px;
-      overflow-y: auto;
-      background: #333;
-      padding: 10px;
-      border-radius: 4px;
-      font-size: 13px;
-      margin-bottom: 10px;
-      white-space: pre-wrap;
+      max-height: 200px; overflow-y: auto; background: #333; padding: 10px;
+      border-radius: 4px; font-size: 13px; margin-bottom: 10px; white-space: pre-wrap;
     }
     #closeAiPanel {
-      background: #e74c3c;
-      border: none;
-      color: #fff;
-      padding: 8px 12px;
-      border-radius: 4px;
-      cursor: pointer;
+      background: #e74c3c; border: none; color: #fff; padding: 8px 12px;
+      border-radius: 4px; cursor: pointer;
     }
   </style>
 </head>
@@ -291,108 +153,109 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/search/search.min.js"></script>
 
   <script>
-    // Initialize CodeMirror
-    const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-      mode: "javascript",
-      lineNumbers: true,
-      lineWrapping: true,
-      indentUnit: 2,
-      tabSize: 2,
-      autofocus: true,
-      theme: "darkmode",
-      styleActiveLine: true,
-      matchBrackets: true,
-      scrollbarStyle: "native"
-    });
+    // Wrap initialization in DOMContentLoaded
+    window.addEventListener("DOMContentLoaded", function() {
+      // Initialize CodeMirror
+      const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+        mode: "javascript",
+        lineNumbers: true,
+        lineWrapping: true,
+        indentUnit: 2,
+        tabSize: 2,
+        autofocus: true,
+        theme: "darkmode",
+        styleActiveLine: true,
+        matchBrackets: true,
+        scrollbarStyle: "native"
+      });
 
-    // File Import Functionality: Append file content to editor
-    document.getElementById("scriptFile").addEventListener("change", function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        const currentContent = editor.getValue();
-        const newContent = currentContent ? currentContent + "\n" + evt.target.result : evt.target.result;
-        editor.setValue(newContent);
-      };
-      reader.onerror = function(err) {
-        console.error("Error reading file:", err);
-      };
-      reader.readAsText(file);
-    });
+      // File Import: Append file content to editor
+      document.getElementById("scriptFile").addEventListener("change", function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const currentContent = editor.getValue();
+          const newContent = currentContent ? currentContent + "\n" + evt.target.result : evt.target.result;
+          editor.setValue(newContent);
+        };
+        reader.onerror = function(err) {
+          console.error("Error reading file:", err);
+        };
+        reader.readAsText(file);
+      });
 
-    // Clear Editor Button
-    document.getElementById("clearBtn").addEventListener("click", () => {
-      editor.setValue("");
-    });
+      // Clear Editor
+      document.getElementById("clearBtn").addEventListener("click", () => {
+        editor.setValue("");
+      });
 
-    // Paste Button using Clipboard API
-    document.getElementById("pasteBtn").addEventListener("click", async () => {
-      try {
-        if (!navigator.clipboard) {
-          alert("Clipboard API not available. Use your browser's paste shortcut.");
-          return;
+      // Paste from Clipboard
+      document.getElementById("pasteBtn").addEventListener("click", async () => {
+        try {
+          if (!navigator.clipboard) {
+            alert("Clipboard API not available. Use your browser's paste shortcut.");
+            return;
+          }
+          const text = await navigator.clipboard.readText();
+          if (text) {
+            const doc = editor.getDoc();
+            const cursor = doc.getCursor();
+            doc.replaceRange(text, cursor);
+          }
+        } catch (err) {
+          console.error("Paste failed:", err);
+          alert("Failed to paste clipboard data. Ensure you're on HTTPS and have clipboard permissions.");
         }
-        const text = await navigator.clipboard.readText();
-        if (text) {
-          const doc = editor.getDoc();
-          const cursor = doc.getCursor();
-          doc.replaceRange(text, cursor);
+      });
+
+      /* --- AI Assistant Integration --- */
+      const askAiBtn = document.getElementById("askAiBtn");
+      const aiPanel = document.getElementById("aiPanel");
+      const aiResponse = document.getElementById("aiResponse");
+      const closeAiPanel = document.getElementById("closeAiPanel");
+
+      askAiBtn.addEventListener("click", async () => {
+        aiPanel.style.display = "block";
+        aiResponse.textContent = "Thinking...";
+        const code = editor.getValue();
+        const prompt = `Please review the following code and offer suggestions:\n\n${code}`;
+        try {
+          const res = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer YOUR_OPENAI_API_KEY"  // Replace with your actual API key
+            },
+            body: JSON.stringify({
+              model: "gpt-3.5-turbo",
+              messages: [
+                { role: "system", content: "You are a helpful AI code assistant." },
+                { role: "user", content: prompt }
+              ],
+              max_tokens: 500,
+              temperature: 0.7
+            })
+          });
+          const data = await res.json();
+          if (data.error) {
+            aiResponse.textContent = "API Error: " + JSON.stringify(data.error);
+            return;
+          }
+          const answer = data.choices[0].message.content;
+          aiResponse.textContent = answer;
+        } catch (err) {
+          console.error(err);
+          aiResponse.textContent = "Error: " + err.message;
         }
-      } catch (err) {
-        console.error("Paste failed:", err);
-        alert("Failed to paste clipboard data. Make sure you are on a secure (HTTPS) page and have granted clipboard permissions.");
-      }
+      });
+
+      closeAiPanel.addEventListener("click", () => {
+        aiPanel.style.display = "none";
+      });
+
+      // Additional functionality (Lint, Auto Fix, etc.) can be added here as needed.
     });
-
-    /* --- AI Assistant Integration --- */
-    const askAiBtn = document.getElementById("askAiBtn");
-    const aiPanel = document.getElementById("aiPanel");
-    const aiResponse = document.getElementById("aiResponse");
-    const closeAiPanel = document.getElementById("closeAiPanel");
-
-    askAiBtn.addEventListener("click", async () => {
-      aiPanel.style.display = "block";
-      aiResponse.textContent = "Thinking...";
-
-      const code = editor.getValue();
-      const prompt = `Please review the following code and offer suggestions:\n\n${code}`;
-
-      try {
-        const res = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer YOUR_OPENAI_API_KEY"  // Replace with your API key
-          },
-          body: JSON.stringify({
-            model: "gpt-3.5-turbo",
-            messages: [
-              { role: "system", content: "You are a helpful AI code assistant." },
-              { role: "user", content: prompt }
-            ],
-            max_tokens: 500,
-            temperature: 0.7
-          })
-        });
-        const data = await res.json();
-        if (data.error) {
-          aiResponse.textContent = "API Error: " + JSON.stringify(data.error);
-          return;
-        }
-        const answer = data.choices[0].message.content;
-        aiResponse.textContent = answer;
-      } catch (err) {
-        console.error(err);
-        aiResponse.textContent = "Error: " + err.message;
-      }
-    });
-
-    closeAiPanel.addEventListener("click", () => {
-      aiPanel.style.display = "none";
-    });
-
-    // (Additional functionality like Lint, Auto Fix, Block Replacer can be added similarly)
   </script>
 </body>
 </html>
