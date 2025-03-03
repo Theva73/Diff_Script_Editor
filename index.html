@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Minimal Mobile Code Editor with Import, Paste & AI</title>
+  <title>Mobile Code Editor with All Buttons Responding</title>
   <!-- CodeMirror CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css" />
   <style>
@@ -49,6 +49,7 @@
     .main-container {
       display: flex;
       flex-direction: column;
+      position: relative;
       height: calc(100vh - 50px);
       overflow: hidden;
     }
@@ -86,7 +87,6 @@
       overflow: auto;
       position: relative;
     }
-    /* CodeMirror dark theme overrides */
     .cm-s-darkmode.CodeMirror {
       background: #1a1a1a !important;
       color: #f5f5f5 !important;
@@ -104,7 +104,6 @@
       font-size: 14px;
       line-height: 1.6;
     }
-    /* Bottom toolbar */
     .bottom-toolbar {
       justify-content: space-between;
       align-items: center;
@@ -147,7 +146,7 @@
   </style>
 </head>
 <body>
-  <!-- File Input -->
+  <!-- File Input Area -->
   <div id="fileContainer">
     <label for="scriptFile">Load Script:</label>
     <input type="file" id="scriptFile" accept=".js,.txt,.html" />
@@ -155,12 +154,14 @@
   </div>
   <!-- Main Container -->
   <div class="main-container">
+    <!-- Tab Bar -->
     <div class="tab-bar">
       <button class="tab-button active" id="codeTab">Code</button>
       <button class="tab-button" id="previewTab">Preview</button>
       <button class="tab-button" id="consoleTab">Console</button>
       <button class="tab-button" id="diffTab">Diff</button>
     </div>
+    <!-- Toolbar -->
     <div class="toolbar">
       <button class="tool-button primary" id="runBtn">Run</button>
       <button class="tool-button" id="analyzeBtn">Analyze</button>
@@ -174,17 +175,19 @@
       <button class="tool-button" id="autoFixBtn">Auto Fix</button>
       <button class="tool-button primary" id="askAiBtn">AI Assist</button>
     </div>
+    <!-- Editor Area -->
     <div class="editor-container">
       <textarea id="code"></textarea>
     </div>
+    <!-- Bottom Toolbar -->
     <div class="bottom-toolbar">
       <div class="nav-buttons">
-        <button class="nav-button">&#8592;</button>
-        <button class="nav-button">&#8594;</button>
+        <button class="nav-button" id="navLeftBtn">&#8592;</button>
+        <button class="nav-button" id="navRightBtn">&#8594;</button>
       </div>
       <button class="action-button" id="blockReplacerBtn">Block Replace</button>
-      <button class="action-button">&#128172;</button>
-      <button class="done-button">Done</button>
+      <button class="action-button" id="chatBtn">&#128172;</button>
+      <button class="done-button" id="doneBtn">Done</button>
     </div>
   </div>
   <!-- AI Panel -->
@@ -201,7 +204,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/search/searchcursor.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/search/search.min.js"></script>
-
   <script>
     window.onload = function() {
       // Initialize CodeMirror
@@ -258,6 +260,22 @@
         }
       });
 
+      // Placeholder event listeners for other buttons
+      document.getElementById("runBtn").addEventListener("click", () => { alert("Run function not implemented."); });
+      document.getElementById("analyzeBtn").addEventListener("click", () => { alert("Analyze function not implemented."); });
+      document.getElementById("findBtn").addEventListener("click", () => { alert("Find function not implemented."); });
+      document.getElementById("copyBtn").addEventListener("click", () => { alert("Copy function not implemented."); });
+      document.getElementById("formatBtn").addEventListener("click", () => { alert("Format function not implemented."); });
+      document.getElementById("preFixBtn").addEventListener("click", () => { alert("Fix function not implemented."); });
+      document.getElementById("saveBtn").addEventListener("click", () => { alert("Save function not implemented."); });
+      document.getElementById("lintBtn").addEventListener("click", () => { alert("Lint function not implemented."); });
+      document.getElementById("autoFixBtn").addEventListener("click", () => { alert("Auto Fix function not implemented."); });
+      document.getElementById("blockReplacerBtn").addEventListener("click", () => { alert("Block Replace function not implemented."); });
+      document.getElementById("navLeftBtn").addEventListener("click", () => { alert("Navigate Left function not implemented."); });
+      document.getElementById("navRightBtn").addEventListener("click", () => { alert("Navigate Right function not implemented."); });
+      document.getElementById("chatBtn").addEventListener("click", () => { alert("Chat function not implemented."); });
+      document.getElementById("doneBtn").addEventListener("click", () => { alert("Done function not implemented."); });
+
       /* --- AI Assistant Integration --- */
       const askAiBtn = document.getElementById("askAiBtn");
       const aiPanel = document.getElementById("aiPanel");
@@ -302,8 +320,6 @@
       closeAiPanel.addEventListener("click", () => {
         aiPanel.style.display = "none";
       });
-
-      // (Additional functionality like Lint or Auto Fix can be added here)
     };
   </script>
 </body>
