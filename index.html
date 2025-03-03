@@ -3,108 +3,164 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mobile Code Editor with Import, Paste & AI</title>
+  <title>Minimal Mobile Code Editor with Import, Paste & AI</title>
   <!-- CodeMirror CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css" />
-
   <style>
     body {
-      margin: 0; padding: 0;
-      font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background-color: #121212; color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background-color: #121212;
+      color: #f5f5f5;
       overflow: hidden;
     }
     #fileContainer {
-      padding: 5px; background: #2a2a2a; border-bottom: 1px solid #333;
-      text-align: center; display: flex; flex-direction: column; align-items: center;
-      z-index: 10;
-    }
-    #fileContainer label {
-      margin-bottom: 4px; font-size: 14px;
-    }
-    #fileContainer input {
-      padding: 6px; font-size: 12px; width: 80%; max-width: 300px;
-      border-radius: 16px; border: 1px solid #555; background: #3a3a3a; color: #f5f5f5;
-    }
-    .clear-button {
-      margin-top: 6px; padding: 8px 10px; border-radius: 16px;
-      border: 1px solid #c0392b; background: #e74c3c; color: white;
-      cursor: pointer; font-size: 12px; white-space: nowrap;
-      transition: all 0.2s ease; min-width: 60px; width: 90%; max-width: 300px;
+      padding: 5px;
+      background: #2a2a2a;
+      border-bottom: 1px solid #333;
       text-align: center;
     }
-    .main-container {
-      display: flex; flex-direction: column; position: relative;
-      height: calc(100vh - 50px); overflow: hidden;
+    #fileContainer label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 14px;
     }
-    .tab-bar, .toolbar {
-      display: flex; flex-wrap: nowrap; white-space: nowrap; overflow-x: auto;
-      -webkit-overflow-scrolling: touch; padding: 4px 5px; gap: 4px;
-      background: #2a2a2a; border-bottom: 1px solid #333; font-size: 12px;
+    #fileContainer input {
+      padding: 6px;
+      font-size: 12px;
+      width: 80%;
+      max-width: 300px;
+      border-radius: 16px;
+      border: 1px solid #555;
+      background: #3a3a3a;
+      color: #f5f5f5;
+    }
+    .clear-button {
+      margin-top: 6px;
+      padding: 8px 10px;
+      border-radius: 16px;
+      border: 1px solid #c0392b;
+      background: #e74c3c;
+      color: white;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 50px);
+      overflow: hidden;
+    }
+    .tab-bar, .toolbar, .bottom-toolbar {
+      display: flex;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+      overflow-x: auto;
+      padding: 4px 5px;
+      gap: 4px;
+      background: #2a2a2a;
+      border-bottom: 1px solid #333;
+      font-size: 12px;
     }
     .tab-button, .tool-button {
-      flex: 0 0 auto; padding: 6px 10px; min-width: 60px; font-size: 12px;
-      border: 1px solid #555; background: #3a3a3a; color: #f5f5f5;
-      border-radius: 20px; cursor: pointer; text-align: center;
+      flex: 0 0 auto;
+      padding: 6px 10px;
+      min-width: 60px;
+      font-size: 12px;
+      border: 1px solid #555;
+      background: #3a3a3a;
+      color: #f5f5f5;
+      border-radius: 20px;
+      cursor: pointer;
+      text-align: center;
     }
-    .tab-button.active { background: #0095ff; color: #fff; border-color: #0077cc; }
-    .tool-button.primary { background: #0095ff; color: #fff; border-color: #0077cc; }
+    .tab-button.active, .tool-button.primary {
+      background: #0095ff;
+      color: #fff;
+      border-color: #0077cc;
+    }
     .editor-container {
-      flex: 1; background: #1a1a1a; overflow: auto; position: relative; min-height: 0;
+      flex: 1;
+      background: #1a1a1a;
+      overflow: auto;
+      position: relative;
     }
-    .cm-s-darkmode.CodeMirror { background: #1a1a1a !important; color: #f5f5f5 !important; }
-    .cm-s-darkmode .CodeMirror-gutters { background: #2a2a2a !important; border-right: 1px solid #333 !important; }
-    .cm-s-darkmode .CodeMirror-linenumber { color: #aaa !important; font-weight: bold; }
-    .CodeMirror { height: 100% !important; font-size: 14px; line-height: 1.6; }
+    /* CodeMirror dark theme overrides */
+    .cm-s-darkmode.CodeMirror {
+      background: #1a1a1a !important;
+      color: #f5f5f5 !important;
+    }
+    .cm-s-darkmode .CodeMirror-gutters {
+      background: #2a2a2a !important;
+      border-right: 1px solid #333 !important;
+    }
+    .cm-s-darkmode .CodeMirror-linenumber {
+      color: #aaa !important;
+      font-weight: bold;
+    }
+    .CodeMirror {
+      height: 100% !important;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    /* Bottom toolbar */
     .bottom-toolbar {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 6px 10px; background: #2a2a2a; border-top: 1px solid #333;
-      font-size: 12px; flex-wrap: nowrap; overflow-x: auto; white-space: nowrap;
-    }
-    .nav-buttons { display: flex; gap: 10px; flex: 0 0 auto; }
-    .nav-button, .action-button {
-      flex: 0 0 auto; background: transparent; border: none; color: #4a90e2;
-      font-size: 20px; cursor: pointer; padding: 4px;
-    }
-    .done-button {
-      flex: 0 0 auto; color: #4a90e2; font-size: 16px; font-weight: bold;
-      background: transparent; border: none; padding: 4px 8px; cursor: pointer;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #333;
     }
     /* AI Panel */
     #aiPanel {
-      display: none; position: fixed; bottom: 0; left: 0; right: 0;
-      z-index: 100; background: #2a2a2a; padding: 10px; border-top: 2px solid #444; color: #fff;
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #2a2a2a;
+      padding: 10px;
+      border-top: 2px solid #444;
+      z-index: 100;
+      color: #fff;
     }
-    #aiPanel h4 { margin: 0 0 8px; }
+    #aiPanel h4 {
+      margin: 0 0 8px;
+    }
     #aiResponse {
-      max-height: 200px; overflow-y: auto; background: #333; padding: 10px;
-      border-radius: 4px; font-size: 13px; margin-bottom: 10px; white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+      background: #333;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      white-space: pre-wrap;
+      margin-bottom: 10px;
     }
     #closeAiPanel {
-      background: #e74c3c; border: none; color: #fff; padding: 8px 12px;
-      border-radius: 4px; cursor: pointer;
+      background: #e74c3c;
+      border: none;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <!-- File Input Area -->
+  <!-- File Input -->
   <div id="fileContainer">
     <label for="scriptFile">Load Script:</label>
     <input type="file" id="scriptFile" accept=".js,.txt,.html" />
-    <button class="clear-button" id="clearBtn">🧹 Clear Editor</button>
+    <button class="clear-button" id="clearBtn">Clear Editor</button>
   </div>
-
   <!-- Main Container -->
   <div class="main-container">
-    <!-- Tab Bar -->
     <div class="tab-bar">
       <button class="tab-button active" id="codeTab">Code</button>
       <button class="tab-button" id="previewTab">Preview</button>
       <button class="tab-button" id="consoleTab">Console</button>
       <button class="tab-button" id="diffTab">Diff</button>
     </div>
-
-    <!-- Toolbar -->
     <div class="toolbar">
       <button class="tool-button primary" id="runBtn">Run</button>
       <button class="tool-button" id="analyzeBtn">Analyze</button>
@@ -118,31 +174,25 @@
       <button class="tool-button" id="autoFixBtn">Auto Fix</button>
       <button class="tool-button primary" id="askAiBtn">AI Assist</button>
     </div>
-
-    <!-- Editor Area -->
-    <div id="editor" class="editor-container">
+    <div class="editor-container">
       <textarea id="code"></textarea>
     </div>
-
-    <!-- Bottom Toolbar -->
     <div class="bottom-toolbar">
       <div class="nav-buttons">
         <button class="nav-button">&#8592;</button>
         <button class="nav-button">&#8594;</button>
       </div>
-      <button class="action-button" id="blockReplacerBtn">📋</button>
+      <button class="action-button" id="blockReplacerBtn">Block Replace</button>
       <button class="action-button">&#128172;</button>
       <button class="done-button">Done</button>
     </div>
   </div>
-
   <!-- AI Panel -->
   <div id="aiPanel">
     <h4>AI Assistant</h4>
-    <div id="aiResponse">AI response will appear here...</div>
+    <div id="aiResponse">Response will appear here...</div>
     <button id="closeAiPanel">Close</button>
   </div>
-
   <!-- External Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
@@ -153,8 +203,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/search/search.min.js"></script>
 
   <script>
-    // Wrap initialization in DOMContentLoaded
-    window.addEventListener("DOMContentLoaded", function() {
+    window.onload = function() {
       // Initialize CodeMirror
       const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
         mode: "javascript",
@@ -225,7 +274,7 @@
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": "Bearer YOUR_OPENAI_API_KEY"  // Replace with your actual API key
+              "Authorization": "Bearer YOUR_OPENAI_API_KEY" // Replace with your API key
             },
             body: JSON.stringify({
               model: "gpt-3.5-turbo",
@@ -254,8 +303,8 @@
         aiPanel.style.display = "none";
       });
 
-      // Additional functionality (Lint, Auto Fix, etc.) can be added here as needed.
-    });
+      // (Additional functionality like Lint or Auto Fix can be added here)
+    };
   </script>
 </body>
 </html>
