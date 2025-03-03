@@ -3,17 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mobile Code Editor with All Buttons Responding</title>
+  <title>All-in-One Code Editor</title>
+  
   <!-- CodeMirror CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css"
+  />
+
   <style>
     body {
       margin: 0;
       padding: 0;
-      font-family: sans-serif;
+      font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background-color: #121212;
       color: #f5f5f5;
-      overflow: hidden;
+      overflow: hidden; /* Avoid extra scrolling in mobile */
     }
     #fileContainer {
       padding: 5px;
@@ -45,11 +50,16 @@
       color: white;
       cursor: pointer;
       font-size: 12px;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      min-width: 60px;
+      width: 90%;
+      max-width: 300px;
+      text-align: center;
     }
     .main-container {
       display: flex;
       flex-direction: column;
-      position: relative;
       height: calc(100vh - 50px);
       overflow: hidden;
     }
@@ -87,6 +97,7 @@
       overflow: auto;
       position: relative;
     }
+    /* CodeMirror theme overrides */
     .cm-s-darkmode.CodeMirror {
       background: #1a1a1a !important;
       color: #f5f5f5 !important;
@@ -108,6 +119,13 @@
       justify-content: space-between;
       align-items: center;
       border-top: 1px solid #333;
+    }
+    /* Preview frame hidden by default, shown when "Run" is clicked */
+    #previewFrame {
+      display: none;
+      width: 100%;
+      height: 100%;
+      border: none;
     }
     /* AI Panel */
     #aiPanel {
@@ -146,24 +164,22 @@
   </style>
 </head>
 <body>
-  <!-- File Input Area -->
+  <!-- File Input -->
   <div id="fileContainer">
     <label for="scriptFile">Load Script:</label>
     <input type="file" id="scriptFile" accept=".js,.txt,.html" />
     <button class="clear-button" id="clearBtn">Clear Editor</button>
   </div>
-  <!-- Main Container -->
+
   <div class="main-container">
-    <!-- Tab Bar -->
     <div class="tab-bar">
       <button class="tab-button active" id="codeTab">Code</button>
       <button class="tab-button" id="previewTab">Preview</button>
       <button class="tab-button" id="consoleTab">Console</button>
       <button class="tab-button" id="diffTab">Diff</button>
     </div>
-    <!-- Toolbar -->
     <div class="toolbar">
-      <button class="tool-button primary" id="runBtn">Run</button>
+      <button class="tool-button" id="runBtn">Run</button>
       <button class="tool-button" id="analyzeBtn">Analyze</button>
       <button class="tool-button" id="findBtn">Find</button>
       <button class="tool-button" id="pasteBtn">Paste</button>
@@ -175,11 +191,14 @@
       <button class="tool-button" id="autoFixBtn">Auto Fix</button>
       <button class="tool-button primary" id="askAiBtn">AI Assist</button>
     </div>
-    <!-- Editor Area -->
-    <div class="editor-container">
+
+    <!-- Editor container -->
+    <div class="editor-container" id="editorContainer">
       <textarea id="code"></textarea>
+      <!-- Hidden preview iframe for "Run" -->
+      <iframe id="previewFrame"></iframe>
     </div>
-    <!-- Bottom Toolbar -->
+
     <div class="bottom-toolbar">
       <div class="nav-buttons">
         <button class="nav-button" id="navLeftBtn">&#8592;</button>
@@ -190,13 +209,15 @@
       <button class="done-button" id="doneBtn">Done</button>
     </div>
   </div>
+
   <!-- AI Panel -->
   <div id="aiPanel">
     <h4>AI Assistant</h4>
     <div id="aiResponse">Response will appear here...</div>
     <button id="closeAiPanel">Close</button>
   </div>
-  <!-- External Scripts -->
+
+  <!-- CodeMirror & Dependencies -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
@@ -204,6 +225,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/search/searchcursor.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/search/search.min.js"></script>
+
+  <!-- ESLint for browser (for Lint & Auto Fix) -->
+  <script src="https://unpkg.com/eslint4b@8.31.0/dist/eslint4b.js"></script>
+  <!-- Prettier for Format (and fallback auto-fix) -->
+  <script src="https://unpkg.com/prettier@2.8.8/standalone.js"></script>
+  <script src="https://unpkg.com/prettier@2.8.8/parser-babel.js"></script>
+
   <script>
     window.onload = function() {
       // Initialize CodeMirror
@@ -220,14 +248,16 @@
         scrollbarStyle: "native"
       });
 
-      // File Import: Append file content to editor
+      // 1. File Import: Append file content to editor
       document.getElementById("scriptFile").addEventListener("change", function(e) {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
         reader.onload = function(evt) {
           const currentContent = editor.getValue();
-          const newContent = currentContent ? currentContent + "\n" + evt.target.result : evt.target.result;
+          const newContent = currentContent
+            ? currentContent + "\n" + evt.target.result
+            : evt.target.result;
           editor.setValue(newContent);
         };
         reader.onerror = function(err) {
@@ -236,12 +266,12 @@
         reader.readAsText(file);
       });
 
-      // Clear Editor
+      // 2. Clear Editor
       document.getElementById("clearBtn").addEventListener("click", () => {
         editor.setValue("");
       });
 
-      // Paste from Clipboard
+      // 3. Paste from Clipboard
       document.getElementById("pasteBtn").addEventListener("click", async () => {
         try {
           if (!navigator.clipboard) {
@@ -256,27 +286,113 @@
           }
         } catch (err) {
           console.error("Paste failed:", err);
-          alert("Failed to paste clipboard data. Ensure you're on HTTPS and have clipboard permissions.");
+          alert("Failed to paste. Check HTTPS and clipboard permissions.");
         }
       });
 
-      // Placeholder event listeners for other buttons
-      document.getElementById("runBtn").addEventListener("click", () => { alert("Run function not implemented."); });
-      document.getElementById("analyzeBtn").addEventListener("click", () => { alert("Analyze function not implemented."); });
-      document.getElementById("findBtn").addEventListener("click", () => { alert("Find function not implemented."); });
-      document.getElementById("copyBtn").addEventListener("click", () => { alert("Copy function not implemented."); });
-      document.getElementById("formatBtn").addEventListener("click", () => { alert("Format function not implemented."); });
-      document.getElementById("preFixBtn").addEventListener("click", () => { alert("Fix function not implemented."); });
-      document.getElementById("saveBtn").addEventListener("click", () => { alert("Save function not implemented."); });
-      document.getElementById("lintBtn").addEventListener("click", () => { alert("Lint function not implemented."); });
-      document.getElementById("autoFixBtn").addEventListener("click", () => { alert("Auto Fix function not implemented."); });
-      document.getElementById("blockReplacerBtn").addEventListener("click", () => { alert("Block Replace function not implemented."); });
-      document.getElementById("navLeftBtn").addEventListener("click", () => { alert("Navigate Left function not implemented."); });
-      document.getElementById("navRightBtn").addEventListener("click", () => { alert("Navigate Right function not implemented."); });
-      document.getElementById("chatBtn").addEventListener("click", () => { alert("Chat function not implemented."); });
-      document.getElementById("doneBtn").addEventListener("click", () => { alert("Done function not implemented."); });
+      // 4. Copy entire code to Clipboard
+      document.getElementById("copyBtn").addEventListener("click", async () => {
+        try {
+          const code = editor.getValue();
+          await navigator.clipboard.writeText(code);
+          alert("Code copied to clipboard!");
+        } catch (err) {
+          alert("Failed to copy code. " + err.message);
+        }
+      });
 
-      /* --- AI Assistant Integration --- */
+      // 5. Format code with Prettier
+      document.getElementById("formatBtn").addEventListener("click", () => {
+        try {
+          const code = editor.getValue();
+          const formatted = prettier.format(code, {
+            parser: "babel",
+            plugins: prettierPlugins, // from <script src="...parser-babel.js">
+            tabWidth: 2,
+            singleQuote: false,
+            semi: true
+          });
+          editor.setValue(formatted);
+          alert("Formatted with Prettier!");
+        } catch (err) {
+          alert("Formatting failed: " + err.message);
+        }
+      });
+
+      // 6. Lint code with ESLint
+      document.getElementById("lintBtn").addEventListener("click", () => {
+        const code = editor.getValue();
+        const linter = new eslint4b.Linter();
+        const config = {
+          parserOptions: { ecmaVersion: 2021 },
+          env: { browser: true },
+          rules: {
+            semi: ["error", "always"],
+            "no-unused-vars": "warn"
+          }
+        };
+        const messages = linter.verify(code, config);
+        if (messages.length === 0) {
+          alert("No lint errors found!");
+        } else {
+          let output = "Lint Errors:\n\n";
+          messages.forEach(msg => {
+            output += `Line ${msg.line}, Col ${msg.column}: [${msg.ruleId}] ${msg.message}\n`;
+          });
+          alert(output);
+        }
+      });
+
+      // 7. Auto Fix (ESLint or fallback to Prettier)
+      document.getElementById("autoFixBtn").addEventListener("click", () => {
+        const code = editor.getValue();
+        const linter = new eslint4b.Linter();
+        const config = {
+          parserOptions: { ecmaVersion: 2021 },
+          env: { browser: true },
+          rules: {
+            semi: ["error", "always"],
+            "no-unused-vars": "warn"
+          },
+          fix: true
+        };
+        if (typeof linter.verifyAndFix === "function") {
+          const result = linter.verifyAndFix(code, config);
+          if (result && result.fixed) {
+            editor.setValue(result.output);
+            alert("ESLint auto-fix applied!");
+          } else {
+            // If nothing was fixed, fallback or let user know
+            alert("No ESLint fixes available. Trying Prettier instead...");
+            const formatted = prettier.format(code, {
+              parser: "babel",
+              plugins: prettierPlugins
+            });
+            editor.setValue(formatted);
+          }
+        } else {
+          // Fallback to Prettier
+          alert("ESLint auto-fix not available. Using Prettier...");
+          const formatted = prettier.format(code, {
+            parser: "babel",
+            plugins: prettierPlugins
+          });
+          editor.setValue(formatted);
+        }
+      });
+
+      // 8. Run code in the preview iframe
+      document.getElementById("runBtn").addEventListener("click", () => {
+        const code = editor.getValue();
+        const previewFrame = document.getElementById("previewFrame");
+        // Show the iframe
+        previewFrame.style.display = "block";
+        // Write code into the iframe
+        previewFrame.srcdoc = code;
+        alert("Code is running in the preview iframe below!");
+      });
+
+      // 9. AI Assist
       const askAiBtn = document.getElementById("askAiBtn");
       const aiPanel = document.getElementById("aiPanel");
       const aiResponse = document.getElementById("aiResponse");
@@ -285,8 +401,8 @@
       askAiBtn.addEventListener("click", async () => {
         aiPanel.style.display = "block";
         aiResponse.textContent = "Thinking...";
-        const code = editor.getValue();
-        const prompt = `Please review the following code and offer suggestions:\n\n${code}`;
+        const codeValue = editor.getValue();
+        const prompt = `Please review the following code and offer suggestions:\n\n${codeValue}`;
         try {
           const res = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
@@ -319,6 +435,32 @@
 
       closeAiPanel.addEventListener("click", () => {
         aiPanel.style.display = "none";
+      });
+
+      // 10. Placeholder or simple alerts for the other buttons
+      document.getElementById("analyzeBtn").addEventListener("click", () => {
+        alert("Analyze function not implemented yet.");
+      });
+      document.getElementById("findBtn").addEventListener("click", () => {
+        alert("Search/Find panel not implemented yet.");
+      });
+      document.getElementById("saveBtn").addEventListener("click", () => {
+        alert("Save function not implemented yet.");
+      });
+      document.getElementById("blockReplacerBtn").addEventListener("click", () => {
+        alert("Block Replace function not implemented yet.");
+      });
+      document.getElementById("navLeftBtn").addEventListener("click", () => {
+        alert("Navigate left function not implemented.");
+      });
+      document.getElementById("navRightBtn").addEventListener("click", () => {
+        alert("Navigate right function not implemented.");
+      });
+      document.getElementById("chatBtn").addEventListener("click", () => {
+        alert("Chat function not implemented.");
+      });
+      document.getElementById("doneBtn").addEventListener("click", () => {
+        alert("Done function not implemented.");
       });
     };
   </script>
