@@ -19,34 +19,9 @@
       color: #f5f5f5;
       overflow: hidden;
     }
-    /* Script Counter Panel (left side) remains unchanged */
-    #scriptCountContainer {
-      position: absolute;
-      top: 50px;
-      left: 0;
-      width: 60px;
-      background: #2a2a2a;
-      border-right: 1px solid #333;
-      text-align: center;
-      padding: 8px 4px;
-      color: #f5f5f5;
-      font-weight: bold;
-      z-index: 999;
-      font-size: 12px;
-    }
-    @media (min-width: 481px) {
-      .main-container {
-        margin-left: 60px;
-      }
-    }
-    @media (max-width: 480px) {
-      #scriptCountContainer {
-        position: fixed;
-        top: 50px;
-        left: 0;
-      }
-    }
-    /* Reduce file input container height */
+    /* Removed scriptCountContainer entirely */
+
+    /* File input container */
     #fileContainer {
       padding: 5px;
       background: #2a2a2a;
@@ -72,16 +47,17 @@
       background: #3a3a3a;
       color: #f5f5f5;
     }
-    /* Make main container taller by reducing top toolbar space */
+
+    /* Main container: fill most of the screen */
     .main-container {
       display: flex;
       flex-direction: column;
-      /* Remove extra reserved space: using 100vh minus fileContainer height (approx 50px) */
-      height: calc(100vh - 50px);
+      height: calc(100vh - 50px); /* Reduced top area for bigger editor */
       overflow: hidden;
       position: relative;
     }
-    /* Reduce tab-bar and toolbar heights */
+
+    /* Tab bar & toolbar: smaller to save space */
     .tab-bar, .toolbar {
       padding: 4px 5px;
       gap: 4px;
@@ -97,15 +73,17 @@
       min-width: 60px;
       font-size: 12px;
     }
-    /* Editor container: flex-grow to fill remaining space */
+
+    /* Editor container: fills remaining space */
     .editor-container {
       flex: 1;
       background: #1a1a1a;
       overflow: auto;
       position: relative;
-      min-height: 0; /* Allow it to shrink as needed */
+      min-height: 0; /* Allow flexible height */
     }
-    /* Custom CodeMirror dark theme */
+
+    /* CodeMirror dark theme */
     .cm-s-darkmode.CodeMirror {
       background: #1a1a1a !important;
       color: #f5f5f5 !important;
@@ -123,7 +101,8 @@
       font-size: 14px;
       line-height: 1.6;
     }
-    /* Remaining styles (Search panel, Preview, Console, Diff, bottom toolbar, etc.) are mostly unchanged */
+
+    /* Search panel */
     .search-panel {
       display: none;
       flex-direction: column;
@@ -163,6 +142,8 @@
       background-color: rgba(255, 165, 0, 0.5);
       color: black;
     }
+
+    /* Preview, Console & Diff views */
     #previewView {
       display: none;
       height: 100%;
@@ -183,6 +164,8 @@
       overflow-y: auto;
       font-family: monospace;
     }
+
+    /* Bottom toolbar */
     .bottom-toolbar {
       display: flex;
       justify-content: space-between;
@@ -193,7 +176,10 @@
       z-index: 10;
       font-size: 12px;
     }
-    .nav-buttons { display: flex; gap: 10px; }
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+    }
     .nav-button, .action-button {
       background: transparent;
       border: none;
@@ -211,7 +197,8 @@
       padding: 4px 8px;
       cursor: pointer;
     }
-    /* Other styles (Issues Panel, Clear button, Block Replacer UI) remain the same */
+
+    /* Issues panel (for ESLint results) */
     #issuesPanel {
       padding: 8px;
       background: #2d2d2d;
@@ -221,6 +208,8 @@
       font-family: monospace;
       font-size: 12px;
     }
+
+    /* Clear button */
     .clear-button {
       display: flex;
       align-items: center;
@@ -240,6 +229,7 @@
       text-align: center;
       margin: 10px auto;
     }
+
     /* Block Replacer UI */
     #blockReplacer {
       display: none;
@@ -280,6 +270,7 @@
       background: #e74c3c;
       color: white;
     }
+
     @media (max-width: 480px) {
       .CodeMirror {
         font-size: 12px;
@@ -295,11 +286,7 @@
   </style>
 </head>
 <body>
-  <!-- Script counter -->
-  <div id="scriptCountContainer">
-    Scripts:<br>
-    <span id="scriptCount">0</span>
-  </div>
+  <!-- Removed the scriptCountContainer -->
 
   <!-- File input container -->
   <div id="fileContainer">
@@ -410,12 +397,13 @@
       scrollbarStyle: "native"
     });
 
-    // File input & script counter
+    // File input
     const scriptFileInput = document.getElementById("scriptFile");
-    const scriptCountEl = document.getElementById("scriptCount");
     scriptFileInput.addEventListener("change", function(e) {
-      scriptCountEl.textContent = e.target.files.length;
+      // Load file(s) if desired; no script count is displayed now
     });
+
+    // Clear editor
     const clearBtn = document.getElementById("clearBtn");
     clearBtn.addEventListener("click", () => { editor.setValue(""); });
 
@@ -469,6 +457,7 @@
         rules: { semi: ["error", "always"], "no-unused-vars": "warn" }
       };
       const messages = linter.verify(code, config);
+      // Clear old highlights
       for (let i = 0; i < editor.lineCount(); i++) {
         editor.removeLineClass(i, "background", "lint-error-line");
       }
@@ -516,8 +505,14 @@
     const replaceBlock = document.getElementById("replaceBlock");
     const doBlockReplace = document.getElementById("doBlockReplace");
     const closeBlockReplacer = document.getElementById("closeBlockReplacer");
-    blockReplacerBtn.addEventListener("click", () => { blockReplacer.style.display = "block"; findBlock.focus(); });
-    closeBlockReplacer.addEventListener("click", () => { blockReplacer.style.display = "none"; });
+
+    blockReplacerBtn.addEventListener("click", () => {
+      blockReplacer.style.display = "block";
+      findBlock.focus();
+    });
+    closeBlockReplacer.addEventListener("click", () => {
+      blockReplacer.style.display = "none";
+    });
     doBlockReplace.addEventListener("click", () => {
       const findText = findBlock.value, replaceText = replaceBlock.value;
       if(!findText) return;
